@@ -54,7 +54,7 @@ More detailled explanations are given below.
      where `SRC_DIR` is the path to the source directory of the plug-in code.
      To see the configuration options, call:
      ```
-        $ SRC_DIR/configure --help
+         SRC_DIR/configure --help
      ```
 
 3. Compile the code:
