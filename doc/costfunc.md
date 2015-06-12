@@ -1,11 +1,12 @@
 # Cost Functions
 
-Cost functions have to be optimized to solve the inverse problem.
+Solving an inverse problem usually amounts to minimizing some cost
+function.
 
-For problems of small size, some optimzers only require the
+For problems of small size, some optimizers only require the
 function(differentiable free solvers).  For smooth functions, the (trust
 region) Newton method is the most efficient and require the function, its
-gradient and the Hessain.
+gradient and the Hessian.
 
 For smooth functions and large size problems, the optimizers require the
 function and its gradient.
