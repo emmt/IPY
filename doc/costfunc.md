@@ -67,7 +67,7 @@ func _prefix_class_prox(alpha, ctx, x, tol) {
 }
 ```
 with `ctx` some contextual data and where the body of the functions are
-indicave.
+indicative.
 
 
 To build a cost function:
