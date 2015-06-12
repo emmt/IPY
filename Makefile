@@ -41,7 +41,7 @@ PKG_CLEAN=
 # autoload file for this package, if any
 PKG_I_START=${srcdir}/ipy-autoload.i
 # non-pkg.i include files for this package, if any
-PKG_I_EXTRA=${srcdir}/ipy-tests.i
+PKG_I_EXTRA=${srcdir}/ipy-tests.i ${srcdir}/ipy-cost.i
 
 RELEASE_FILES = AUTHORS LICENSE.md Makefile NEWS README.md TODO \
 	configure linop.i admm.i cost.i ipy.i ipy.c \
@@ -95,8 +95,11 @@ dummy-default:
 #myfunc.o: myapi.h myfunc.c
 #	$(CC) $(CPPFLAGS) $(CFLAGS) -DMY_SWITCH -o $@ -c myfunc.c
 
-start:
-	sed -E '/^ *(func|extern) +[A-Za-z][_0-9A-Za-z]*/!d;s/^ *(func|extern) +([A-Za-z][_0-9A-Za-z]*).*/autoload, "ipy.i", \2;/' < ipy.i
+start: ${srcdir}/ipy.i ${srcdir}/ipy-cost.i
+	for x in $^; do \
+	  y=`basename "$$x"`; \
+	  sed -E "/^ *(func|extern) +[A-Za-z][_0-9A-Za-z]*/!d;s/^ *(func|extern) +([A-Za-z][_0-9A-Za-z]*).*/autoload, \"$$y\", \2;/" < "$$x"; \
+	done
 
 release: $(RELEASE_NAME)
 

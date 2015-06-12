@@ -14,3 +14,16 @@ autoload, "ipy.i", ipy_shift_dims;
 autoload, "ipy.i", ipy_format, ipy_warn, ipy_error;
 autoload, "ipy.i", ipy_conjgrad;
 autoload, "ipy.i", ipy_benchmark;
+
+/* Routines provided by ipy-cost.i */
+autoload, "ipy-cost.i", ipy_compute_cost;
+autoload, "ipy-cost.i", ipy_compute_cost_and_gradient;
+autoload, "ipy-cost.i", ipy_apply_prox;
+autoload, "ipy-cost.i", ipy_new_cost;
+autoload, "ipy-cost.i", ipy_implements_f;
+autoload, "ipy-cost.i", ipy_implements_fg;
+autoload, "ipy-cost.i", ipy_implements_prox;
+autoload, "ipy-cost.i", ipy_new_weighting_operator;
+autoload, "ipy-cost.i", ipy_new_diagonal_operator, ipy_is_diagonal_operator;
+autoload, "ipy-cost.i", ipy_get_diagonal_of_diagonal_operator;
+autoload, "ipy-cost.i", ipy_new_quadratic_cost;
