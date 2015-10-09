@@ -80,15 +80,12 @@ extern ipy_combine;
   SEE ALSO: ipy_scale.
 */
 
-func ipy_scale(alpha, x)
+func ipy_scale(alpha, x) { return (alpha != 1.0 ? ipy_combine(alpha, x) : x); }
 /* DOCUMENT ipy_scale(alpha, x)
      This function returns X multiplied by scalar ALPHA.
 
    SEE ALSO: ipy_identity, ipy_combine.
  */
-{
-  return (alpha != 1.0 ? ipy_combine(alpha, a) : x);
-}
 
 /*---------------------------------------------------------------------------*/
 /* LINEAR ALGEBRA AND OPERATORS */
@@ -102,7 +99,7 @@ func ipy_apply_diagonal_operator(w, x, job)
   return w*x;
 }
 
-func ipy_identity(x, job)
+func ipy_identity(x, job) { return x; }
 /* DOCUMENT ipy_identity(x);
          or ipy_identity(x, job);
      This function returns X.  The prototype of this function makes it
@@ -110,9 +107,6 @@ func ipy_identity(x, job)
 
    SEE ALSO: ipy_scale, linop_new.
  */
-{
-  return x;
-}
 
 func ipy_mirror(a, job)
 /* DOCUMENT ipy_mirror(a);
