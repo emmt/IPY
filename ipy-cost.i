@@ -58,8 +58,9 @@ func ipy_compute_cost_and_gradient(alpha, obj, x, &grad)
   return obj.fg(alpha, obj.ctx, x, grad);
 }
 
-func ipy_apply_prox(alpha, obj, x, init=, tol=, maxiter=)
+func ipy_apply_prox(alpha, obj, x, xpinit, tol=, maxiter=)
 /* DOCUMENT xp = ipy_apply_prox(alpha, f, x);
+         or xp = ipy_apply_prox(alpha, f, x, xpinit);
 
       Apply proximal operator.  The result is the solution of:
 
@@ -72,12 +73,12 @@ func ipy_apply_prox(alpha, obj, x, init=, tol=, maxiter=)
       some tolerance for solving the  problem must be provided.  The tolerance
       can be specified by the keyword TOL.
 
-      For  proximal operators  which iteratively  seek for  the solution,  the
+      For proximal operators which iteratively seek for the solution, optional
+      argument  XPINIT provides  the initial  solution to  start with  and the
       following keywords can be used:
 
-          init    = Initial solution to start with.
           maxiter = Maximum number of iterations.
-
+          tol = Tolerance for convergence.
 
     SEE ALSO: ipy_compute_cost, ipy_compute_cost_and_gradient, ipy_new_cost.
 */
@@ -86,7 +87,7 @@ func ipy_apply_prox(alpha, obj, x, init=, tol=, maxiter=)
     if (alpha < 0.0) error, "invalid multiplier";
     return x;
   }
-  return obj.prox(alpha, obj.ctx, x, tol);
+  return obj.prox(alpha, obj.ctx, x, xpinit, maxiter=maxiter, tol=tol);
 }
 
 func ipy_new_cost(name, ctx=, f=, fg=, prox=)
@@ -111,9 +112,9 @@ func ipy_new_cost(name, ctx=, f=, fg=, prox=)
          func f(alpha, ctx, x)              return alpha*f(x)
          func fg(alpha, ctx, x, &grad)      return alpha*f(x) and store
                                             alpha*g(x) in grad
-         func prox(alpha, ctx, x,           return the solution of:
-                   init=, tol=, maxiter=)       min_xp { alpha*f(xp) +
-                                                         + (1/2)||xp -x||^2 }
+         func prox(alpha, ctx, x, xpinit,   return the solution of:
+                   tol=, maxiter=)          min_xp { alpha*f(xp)
+                                                     + (1/2)||xp -x||^2 }
          --------------------------------------------------------------------
 
      where  f(x) is  the  cost function,  g(x)  is its  gradient,  alpha is  a
@@ -159,25 +160,28 @@ errs2caller, _ipy_get_method;
 
 func _ipy_bogus_f(alpha, ctx, x)
 {
+  extern obj;
   error, ("`" + obj.name + "` cost does not implement `compute_cost`");
 }
 
 func _ipy_bogus_fg(alpha, c, x, &g)
 {
+  extern obj;
   error, ("`" + obj.name +
           "` cost does not implement `compute_cost_and_gradient`");
 }
 
 func _ipy_bogus_prox(alpha, c, x)
 {
+  extern obj;
   error, ("`" + obj.name + "` cost does not implement `apply_prox`");
 }
 
 errs2caller, _ipy_bogus_f, _ipy_bogus_fg, _ipy_bogus_prox;
 
-func ipy_implements_f(obj) { return ((obj.flags & 1) != 0); }
-func ipy_implements_fg(obj) { return ((obj.flags & 2) != 0); }
-func ipy_implements_prox(obj) { return ((obj.flags & 4) != 0); }
+func ipy_implements_f(obj)    { return ((obj.flags & 1) == 1); }
+func ipy_implements_fg(obj)   { return ((obj.flags & 2) == 2); }
+func ipy_implements_prox(obj) { return ((obj.flags & 4) == 4); }
 /* DOCUMENT ipy_implements_f(obj);
          or ipy_implements_fg(obj);
          or ipy_implements_prox(obj);
@@ -294,7 +298,7 @@ func _ipy_quadratic0_fg(alpha, c, x, &g)
   return (alpha/2.0)*ipy_inner(x,x);
 }
 
-func _ipy_quadratic0_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic0_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   return ipy_scale(1.0/(1.0 + alpha), x);
 }
@@ -314,7 +318,7 @@ func _ipy_quadratic1_fg(alpha, c, x, &g)
   return (alpha/2.0)*ipy_inner(Ax,Ax);
 }
 
-func _ipy_quadratic1_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic1_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   if (ipy_is_diagonal_operator(c.A)) {
     local a;
@@ -325,7 +329,7 @@ func _ipy_quadratic1_prox(alpha, c, x, init=, tol=, maxiter=)
   return ipy_conjgrad(h_functor("_ipy_quadratic_I_alphaAtA",
                                 alpha=alpha, A=c.A),
                       x,
-                      (is_void(init) ? x : init),
+                      (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
 
@@ -359,7 +363,7 @@ func _ipy_quadratic2_fg(alpha, c, x, &g)
   return (alpha/2.0)*ipy_inner(r,r);
 }
 
-func _ipy_quadratic2_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic2_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   return ipy_combine(1.0/(1.0 + alpha), x, alpha/(1.0 + alpha), c.b);
 }
@@ -379,7 +383,7 @@ func _ipy_quadratic3_fg(alpha, c, x, &g)
   return (alpha/2.0)*ipy_inner(r,r);
 }
 
-func _ipy_quadratic3_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic3_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   if (ipy_is_diagonal_operator(c.A)) {
     local a;
@@ -392,7 +396,7 @@ func _ipy_quadratic3_prox(alpha, c, x, init=, tol=, maxiter=)
   return ipy_conjgrad(h_functor("_ipy_quadratic_I_alphaAtA",
                                 alpha=alpha, A=c.A),
                       x + alpha*c.Atb,
-                      (is_void(init) ? x : init),
+                      (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
 
@@ -411,7 +415,7 @@ func _ipy_quadratic4_fg(alpha, c, x, &g)
   return f;
 }
 
-func _ipy_quadratic4_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic4_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   if (ipy_is_diagonal_operator(c.W)) {
     d = 1.0 + alpha*c.W.data;
@@ -420,7 +424,7 @@ func _ipy_quadratic4_prox(alpha, c, x, init=, tol=, maxiter=)
   return ipy_conjgrad(h_functor("_ipy_quadratic_I_alphaW",
                                 alpha=alpha, W=c.W),
                       x,
-                      (is_void(init) ? x : init),
+                      (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
 
@@ -440,7 +444,7 @@ func _ipy_quadratic5_fg(alpha, c, x, &g)
   return (alpha/2.0)*ipy_inner(Ax, WAx);
 }
 
-func _ipy_quadratic5_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic5_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   if (ipy_is_diagonal_operator(c.W) && ipy_is_diagonal_operator(c.A)) {
     local a;
@@ -451,7 +455,7 @@ func _ipy_quadratic5_prox(alpha, c, x, init=, tol=, maxiter=)
   return ipy_conjgrad(h_functor("_ipy_quadratic_I_alphaAtWA",
                                 alpha=alpha, A=c.A, W=c.W),
                       x,
-                      (is_void(init) ? x : init),
+                      (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
 
@@ -472,7 +476,7 @@ func _ipy_quadratic6_fg(alpha, c, x, &g)
   return f;
 }
 
-func _ipy_quadratic6_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic6_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   if (ipy_is_diagonal_operator(c.W)) {
     local w;
@@ -485,7 +489,7 @@ func _ipy_quadratic6_prox(alpha, c, x, init=, tol=, maxiter=)
   return ipy_conjgrad(h_functor("_ipy_quadratic2_prox_LHS",
                                 alpha=alpha, W=c.W),
                       x + alpha*c.Wb,
-                      (is_void(init) ? x : init),
+                      (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
 
@@ -505,7 +509,7 @@ func _ipy_quadratic7_fg(alpha, c, x, &g)
   return (alpha/2.0)*ipy_inner(r,Wr);
 }
 
-func _ipy_quadratic7_prox(alpha, c, x, init=, tol=, maxiter=)
+func _ipy_quadratic7_prox(alpha, c, x, xpinit, tol=, maxiter=)
 {
   if (ipy_is_diagonal_operator(c.W) && ipy_is_diagonal_operator(c.A)) {
     local a, w;
@@ -519,7 +523,7 @@ func _ipy_quadratic7_prox(alpha, c, x, init=, tol=, maxiter=)
   return ipy_conjgrad(h_functor("_ipy_quadratic_I_alphaAtWA",
                                 alpha=alpha, A=c.A, W=c.W),
                       x + alpha*c.AtWb,
-                      (is_void(init) ? x : init),
+                      (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
 
