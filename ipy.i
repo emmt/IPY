@@ -90,14 +90,46 @@ func ipy_scale(alpha, x) { return (alpha != 1.0 ? ipy_combine(alpha, x) : x); }
 /*---------------------------------------------------------------------------*/
 /* LINEAR ALGEBRA AND OPERATORS */
 
-func ipy_new_diagonal_operator(w) /* FIXME: documentation missing */
+func ipy_new_weighting_operator(w)
+/* DOCUMENT ipy_new_weighting_operator(w);
+     Create a weighting operator.
+   SEE ALSO: ipy_new_diagonal_operator.
+ */
 {
-  return closure("ipy_apply_diagonal_operator", double(w));
+  if (min(w) < 0.0) error, "weights must be nonnegative";
+  return ipy_new_diagonal_operator(w);
 }
-func ipy_apply_diagonal_operator(w, x, job)
+
+local ipy_new_diagonal_operator;
+local ipy_is_diagonal_operator;
+local ipy_get_diagonal_of_diagonal_operator;
+/* DOCUMENT op = ipy_new_diagonal_operator(w);
+         or ipy_is_diagonal_operator(op);
+         or w = ipy_get_diagonal_of_diagonal_operator(op);
+
+     Create a diagonal operator, check whether a object is a diagonal operator
+     or retrieve the diagonal elements of a diagonal operator.  Argument W
+     gives the diagonal elements of the operator.
+
+   SEE ALSO: ipy_new_weighting_operator.
+ */
+
+func ipy_new_diagonal_operator(w)
 {
-  return w*x;
+  if (! is_array(w)) error, "invalid argument";
+  return closure("_ipy_apply_diagonal_operator", w);
 }
+
+func _ipy_apply_diagonal_operator(w, x, job) { return w*x; }
+
+func ipy_is_diagonal_operator(op)
+{
+  return (is_func(op) == 5n &&
+          op.function_name == "_ipy_apply_diagonal_operator");
+}
+
+func ipy_get_diagonal_of_diagonal_operator(op) { return op.data; }
+
 
 func ipy_identity(x, job) { return x; }
 /* DOCUMENT ipy_identity(x);

@@ -1,7 +1,9 @@
 /* Routines provided by ipy.i */
 autoload, "ipy.i", ipy_norm_1, ipy_norm_2, ipy_norm_inf;
 autoload, "ipy.i", ipy_inner, ipy_combine, ipy_scale;
-autoload, "ipy.i", ipy_new_diagonal_operator, ipy_apply_diagonal_operator;
+autoload, "ipy.i", ipy_new_weighting_operator;
+autoload, "ipy.i", ipy_new_diagonal_operator, ipy_is_diagonal_operator;
+autoload, "ipy.i", ipy_get_diagonal_of_diagonal_operator;
 autoload, "ipy.i", ipy_identity;
 autoload, "ipy.i", ipy_mirror;
 autoload, "ipy.i", ipy_split_index;
@@ -23,7 +25,4 @@ autoload, "ipy-cost.i", ipy_new_cost;
 autoload, "ipy-cost.i", ipy_implements_f;
 autoload, "ipy-cost.i", ipy_implements_fg;
 autoload, "ipy-cost.i", ipy_implements_prox;
-autoload, "ipy-cost.i", ipy_new_weighting_operator;
-autoload, "ipy-cost.i", ipy_new_diagonal_operator, ipy_is_diagonal_operator;
-autoload, "ipy-cost.i", ipy_get_diagonal_of_diagonal_operator;
 autoload, "ipy-cost.i", ipy_new_quadratic_cost;

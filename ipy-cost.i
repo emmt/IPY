@@ -192,53 +192,6 @@ func ipy_implements_prox(obj) { return ((obj.flags & 4) == 4); }
  */
 
 /*---------------------------------------------------------------------------*/
-/* SIMPLE OPERATORS */
-
-func ipy_new_weighting_operator(w)
-/* DOCUMENT ipy_new_weighting_operator(w);
-     Create a weighting operator.
-   SEE ALSO: ipy_new_diagonal_operator.
- */
-{
-  if (min(w) < 0.0) error, "weights must be nonnegative";
-  return ipy_new_diagonal_operator(w);
-}
-
-local ipy_is_diagonal_operator;
-local ipy_get_diagonal_of_diagonal_operator;
-func ipy_new_diagonal_operator(a)
-/* DOCUMENT op = ipy_new_diagonal_operator(a);
-         or ipy_is_diagonal_operator(op);
-         or a = ipy_get_diagonal_of_diagonal_operator(op);
-
-     Create a diagonal operator, check whether a object is a diagonal operator
-     or retrieve  the diagonal  elements of a  diagonal operator.   Argument A
-     gives the diagonal elements of the operator.
-
-   SEE ALSO: ipy_new_weighting_operator.
- */
-{
-  if (! is_array(a)) error, "invalid argument";
-  return closure("_ipy_eval_diagonal_operator", a);
-}
-
-func _ipy_eval_diagonal_operator(a, x, job)
-{
-  return a*x;
-}
-
-func ipy_is_diagonal_operator(op)
-{
-  return (is_func(op) == 5n &&
-          op.function_name == "_ipy_eval_diagonal_operator");
-}
-
-func ipy_get_diagonal_of_diagonal_operator(op)
-{
-  return op.data;
-}
-
-/*---------------------------------------------------------------------------*/
 /* QUADRATIC PENALTY */
 
 func ipy_new_quadratic_cost(nil, A=, b=, W=)
