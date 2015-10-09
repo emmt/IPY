@@ -18,10 +18,9 @@ where `BUILD_DIR` is the build directory (at your convenience) and `SRC_DIR` is
 the source directory of the plug-in code.  The build and source directories
 can be the same in which case, call `./configure` to configure for building.
 
-Then, to use the plug-in in Yorick:
+Then, to use the plug-in, start the Yorick interpreter and type:
 ```
-    yorick
-    include "ipy.i"
+    #include "ipy.i"
 ```
 More detailled explanations are given below.
 
