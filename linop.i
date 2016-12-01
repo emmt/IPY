@@ -898,14 +898,3 @@ func _linop_fft_wrapper(obj, x, job)
   }
   return ((job == 3 || job == 2) ? obj.scale*x : x);
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 79
- * coding: utf-8
- * End:
- */

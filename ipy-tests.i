@@ -166,14 +166,3 @@ func ipy_bench1
 
   if (dst_addr != strtrim(swrite(&dst))) error, "address of destination has changed";
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 79
- * coding: utf-8
- * End:
- */

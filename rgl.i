@@ -2969,14 +2969,3 @@ func _rgl_identity_evaluator(this, arg, transp) { return arg; }
 rgl_identity = h_new();
 h_evaluator, rgl_identity, "_rgl_identity_evaluator";
 #endif
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 79
- * coding: utf-8
- * End:
- */

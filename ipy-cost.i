@@ -479,14 +479,3 @@ func _ipy_quadratic7_prox(alpha, c, x, xpinit, tol=, maxiter=)
                       (is_void(xpinit) ? x : xpinit),
                       maxiter=maxiter, gtol=[0.0,tol]);
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 78
- * coding: utf-8
- * End:
- */

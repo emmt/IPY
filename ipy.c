@@ -55,8 +55,8 @@ PLUG_API void y_error(const char *) __attribute__ ((noreturn));
 static int same_dims(const long xdims[], const long ydims[]);
 
 /* Define a Yorick global symbol with an scalar value. */
-static void define_int_const(const char* name, int value);
-static void define_double_const(const char* name, double value);
+static void define_int_const(const char *name, int value);
+static void define_double_const(const char *name, double value);
 
 /*---------------------------------------------------------------------------*/
 /* BUILT-IN FUNCTIONS */
@@ -72,12 +72,12 @@ Y_ipy_norm_1(int argc)
   type = yarg_typeid(0);
   if (type > Y_DOUBLE) y_error("bad argument type");
   if (type == Y_DOUBLE || type == Y_LONG) {
-    const double* v = ygeta_d(0, &ntot, NULL);
+    const double *v = ygeta_d(0, &ntot, NULL);
     for (i = 0; i < ntot; ++i) {
       sum += fabs(v[i]);
     }
   } else {
-    const float* v = ygeta_f(0, &ntot, NULL);
+    const float *v = ygeta_f(0, &ntot, NULL);
     for (i = 0; i < ntot; ++i) {
       sum += fabsf(v[i]);
     }
@@ -96,12 +96,12 @@ Y_ipy_norm_2(int argc)
   type = yarg_typeid(0);
   if (type > Y_DOUBLE) y_error("bad argument type");
   if (type == Y_DOUBLE || type == Y_LONG) {
-    const double* v = ygeta_d(0, &ntot, NULL);
+    const double *v = ygeta_d(0, &ntot, NULL);
     for (i = 0; i < ntot; ++i) {
       sum += v[i]*v[i];
     }
   } else {
-    const float* v = ygeta_f(0, &ntot, NULL);
+    const float *v = ygeta_f(0, &ntot, NULL);
     for (i = 0; i < ntot; ++i) {
       sum += v[i]*v[i];
     }
@@ -120,7 +120,7 @@ Y_ipy_norm_inf(int argc)
   type = yarg_typeid(0);
   if (type > Y_DOUBLE) y_error("bad argument type");
   if (type == Y_DOUBLE || type == Y_LONG) {
-    const double* v = ygeta_d(0, &ntot, NULL);
+    const double *v = ygeta_d(0, &ntot, NULL);
     double val, maxval = 0;
     for (i = 0; i < ntot; ++i) {
       val = fabs(v[i]);
@@ -128,7 +128,7 @@ Y_ipy_norm_inf(int argc)
     }
     result = maxval;
   } else {
-    const float* v = ygeta_f(0, &ntot, NULL);
+    const float *v = ygeta_f(0, &ntot, NULL);
     float val, maxval = 0;
     for (i = 0; i < ntot; ++i) {
       val = fabsf(v[i]);
@@ -145,9 +145,9 @@ Y_ipy_inner(int argc)
   double sum = 0.0;
   long dims[Y_DIMSIZE];
   long tdims[Y_DIMSIZE];
-  void* wptr;
-  void* xptr;
-  void* yptr;
+  void *wptr;
+  void *xptr;
+  void *yptr;
   long ntot, i;
   int wtype, xtype, ytype, type;
 
@@ -175,30 +175,30 @@ Y_ipy_inner(int argc)
 
   if (argc == 3) {
     if (type == Y_FLOAT) {
-      const float* w = (const float*)wptr;
-      const float* x = (const float*)xptr;
-      const float* y = (const float*)yptr;
+      const float *w = (const float *)wptr;
+      const float *x = (const float *)xptr;
+      const float *y = (const float *)yptr;
       for (i = 0; i < ntot; ++i) {
         sum += w[i]*x[i]*y[i];
       }
     } else {
-      const double* w = (const double*)wptr;
-      const double* x = (const double*)xptr;
-      const double* y = (const double*)yptr;
+      const double *w = (const double *)wptr;
+      const double *x = (const double *)xptr;
+      const double *y = (const double *)yptr;
       for (i = 0; i < ntot; ++i) {
         sum += w[i]*x[i]*y[i];
       }
     }
   } else {
     if (type == Y_FLOAT) {
-      const float* x = (const float*)xptr;
-      const float* y = (const float*)yptr;
+      const float *x = (const float *)xptr;
+      const float *y = (const float *)yptr;
       for (i = 0; i < ntot; ++i) {
         sum += x[i]*y[i];
       }
     } else {
-      const double* x = (const double*)xptr;
-      const double* y = (const double*)yptr;
+      const double *x = (const double *)xptr;
+      const double *y = (const double *)yptr;
       for (i = 0; i < ntot; ++i) {
         sum += x[i]*y[i];
       }
@@ -214,8 +214,8 @@ Y_ipy_combine(int argc)
   double a[5];
   long dims[Y_DIMSIZE];
   long tdims[Y_DIMSIZE];
-  void* rptr;
-  void* v[5];
+  void *rptr;
+  void *v[5];
   long ntot, i, index;
   int rtype, vtype[5], type, iarg[5], j, jp, n;
   int fresh;
@@ -300,15 +300,15 @@ Y_ipy_combine(int argc)
     }
   } else if (n == 1) {
     if (type == Y_FLOAT) {
-      float* r = (float*)rptr;
-      const float* v0 = (const float*)v[0];
+      float *r = (float *)rptr;
+      const float *v0 = (const float *)v[0];
       float a0 = a[0];
       for (i = 0; i < ntot; ++i) {
         r[i] = a0*v0[i];
       }
     } else {
-      double* r = (double*)rptr;
-      const double* v0 = (const double*)v[0];
+      double *r = (double *)rptr;
+      const double *v0 = (const double *)v[0];
       double a0 = a[0];
       for (i = 0; i < ntot; ++i) {
         r[i] = a0*v0[i];
@@ -316,18 +316,18 @@ Y_ipy_combine(int argc)
     }
   } else if (n == 2) {
     if (type == Y_FLOAT) {
-      float* r = (float*)rptr;
-      const float* v0 = (const float*)v[0];
-      const float* v1 = (const float*)v[1];
+      float *r = (float *)rptr;
+      const float *v0 = (const float *)v[0];
+      const float *v1 = (const float *)v[1];
       float a0 = a[0];
       float a1 = a[1];
       for (i = 0; i < ntot; ++i) {
         r[i] = a0*v0[i] + a1*v1[i];
       }
     } else {
-      double* r = (double*)rptr;
-      const double* v0 = (const double*)v[0];
-      const double* v1 = (const double*)v[1];
+      double *r = (double *)rptr;
+      const double *v0 = (const double *)v[0];
+      const double *v1 = (const double *)v[1];
       double a0 = a[0];
       double a1 = a[1];
       for (i = 0; i < ntot; ++i) {
@@ -336,10 +336,10 @@ Y_ipy_combine(int argc)
     }
   } else if (n == 3) {
     if (type == Y_FLOAT) {
-      float* r = (float*)rptr;
-      const float* v0 = (const float*)v[0];
-      const float* v1 = (const float*)v[1];
-      const float* v2 = (const float*)v[2];
+      float *r = (float *)rptr;
+      const float *v0 = (const float *)v[0];
+      const float *v1 = (const float *)v[1];
+      const float *v2 = (const float *)v[2];
       float a0 = a[0];
       float a1 = a[1];
       float a2 = a[2];
@@ -347,10 +347,10 @@ Y_ipy_combine(int argc)
         r[i] = a0*v0[i] + a1*v1[i] + a2*v2[i];
       }
     } else {
-      double* r = (double*)rptr;
-      const double* v0 = (const double*)v[0];
-      const double* v1 = (const double*)v[1];
-      const double* v2 = (const double*)v[2];
+      double *r = (double *)rptr;
+      const double *v0 = (const double *)v[0];
+      const double *v1 = (const double *)v[1];
+      const double *v2 = (const double *)v[2];
       double a0 = a[0];
       double a1 = a[1];
       double a2 = a[2];
@@ -360,11 +360,11 @@ Y_ipy_combine(int argc)
     }
   } else if (n == 4) {
     if (type == Y_FLOAT) {
-      float* r = (float*)rptr;
-      const float* v0 = (const float*)v[0];
-      const float* v1 = (const float*)v[1];
-      const float* v2 = (const float*)v[2];
-      const float* v3 = (const float*)v[3];
+      float *r = (float *)rptr;
+      const float *v0 = (const float *)v[0];
+      const float *v1 = (const float *)v[1];
+      const float *v2 = (const float *)v[2];
+      const float *v3 = (const float *)v[3];
       float a0 = a[0];
       float a1 = a[1];
       float a2 = a[2];
@@ -373,11 +373,11 @@ Y_ipy_combine(int argc)
         r[i] = a0*v0[i] + a1*v1[i] + a2*v2[i] + a3*v3[i];
       }
     } else {
-      double* r = (double*)rptr;
-      const double* v0 = (const double*)v[0];
-      const double* v1 = (const double*)v[1];
-      const double* v2 = (const double*)v[2];
-      const double* v3 = (const double*)v[3];
+      double *r = (double *)rptr;
+      const double *v0 = (const double *)v[0];
+      const double *v1 = (const double *)v[1];
+      const double *v2 = (const double *)v[2];
+      const double *v3 = (const double *)v[3];
       double a0 = a[0];
       double a1 = a[1];
       double a2 = a[2];
@@ -388,12 +388,12 @@ Y_ipy_combine(int argc)
     }
   } else if (n == 5) {
     if (type == Y_FLOAT) {
-      float* r = (float*)rptr;
-      const float* v0 = (const float*)v[0];
-      const float* v1 = (const float*)v[1];
-      const float* v2 = (const float*)v[2];
-      const float* v3 = (const float*)v[3];
-      const float* v4 = (const float*)v[4];
+      float *r = (float *)rptr;
+      const float *v0 = (const float *)v[0];
+      const float *v1 = (const float *)v[1];
+      const float *v2 = (const float *)v[2];
+      const float *v3 = (const float *)v[3];
+      const float *v4 = (const float *)v[4];
       float a0 = a[0];
       float a1 = a[1];
       float a2 = a[2];
@@ -403,12 +403,12 @@ Y_ipy_combine(int argc)
         r[i] = a0*v0[i] + a1*v1[i] + a2*v2[i] + a3*v3[i] + a4*v4[i];
       }
     } else {
-      double* r = (double*)rptr;
-      const double* v0 = (const double*)v[0];
-      const double* v1 = (const double*)v[1];
-      const double* v2 = (const double*)v[2];
-      const double* v3 = (const double*)v[3];
-      const double* v4 = (const double*)v[4];
+      double *r = (double *)rptr;
+      const double *v0 = (const double *)v[0];
+      const double *v1 = (const double *)v[1];
+      const double *v2 = (const double *)v[2];
+      const double *v3 = (const double *)v[3];
+      const double *v4 = (const double *)v[4];
       double a0 = a[0];
       double a1 = a[1];
       double a2 = a[2];
@@ -463,7 +463,7 @@ same_dims(const long xdims[], const long ydims[])
 }
 
 static void
-define_int_const(const char* name, int value)
+define_int_const(const char *name, int value)
 {
   ypush_int(value);
   yput_global(yget_global(name, 0), 0);
@@ -471,21 +471,9 @@ define_int_const(const char* name, int value)
 }
 
 static void
-define_double_const(const char* name, double value)
+define_double_const(const char *name, double value)
 {
   ypush_double(value);
   yput_global(yget_global(name, 0), 0);
   yarg_drop(1);
 }
-
-/*
- * Local Variables:
- * mode: C
- * c-basic-offset: 2
- * tab-width: 8
- * indent-tabs-mode: nil
- * fill-column: 79
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */
