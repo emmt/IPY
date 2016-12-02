@@ -8,7 +8,7 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2007-20012 Éric Thiébaut <eric.thiebaut@obs.univ-lyon1.fr>
+ * Copyright (C) 2007-20012 Éric Thiébaut <eric.eric.thiebaut@univ-lyon1.fr>
  * Copyright (C) 2013 MiTiV project <http://mitiv.univ-lyon1.fr>
  *
  *
