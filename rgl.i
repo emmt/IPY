@@ -4,13 +4,14 @@
  * Implement regularization operators for iterative optimization and
  * inverse problems.
  *
- * This file is part of IPY package, "Inverse Problems with Yorick".
- *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2007-20012 Éric Thiébaut <eric.eric.thiebaut@univ-lyon1.fr>
- * Copyright (C) 2013 MiTiV project <http://mitiv.univ-lyon1.fr>
+ * This file is part of IPY package, "Inverse Problems with Yorick", available
+ * at <https://github.com/emmt/IPY>.
  *
+ * Copyright (C) 2007-2012, Éric Thiébaut.
+ * Copyright (C) 2013-2015, MiTiV project <http://mitiv.univ-lyon1.fr>
+ * Copyright (C) 2016, Éric Thiébaut.
  *
  * This file is part of free software IPY: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published by
@@ -50,31 +51,34 @@ if (! is_func(linop_new)) include, current_include_dir() + "linop.i", 1;
 
 local _RGL_CLASS;
 func rgl_info(..)
-/* DOCUMENT RGL: Regularization Operators for Iterative
- *               Optimization and Inverse Problems
- *
- *   The following calling sequences are implemented:
- *
- *     rgl_info - Lists all implemented regularization methods and their
- *                configurable attributes (e.g. hyper-parameters).
- *
- *     rgl_info, NAME1, NAME2, ...
- *              - Lists attributes for regularization methods NAME1, NAME2, ...
- *
- *     rgl_info(NAME)
- *              - Returns list of attributes for regularization method NAME.
- *
- *     rgl_info()
- *              - Returns sorted list of all implemented regularization
- *                methods.
- *
- *   The RGL package, implements the following "public" functions, (for more
- *   details about function FN, use: help, FN):
- *
- *      rgl_new - create a new instance of regularization method.
- *      rgl_config - configure regularization parameter(s).
- *
- * SEE ALSO: rgl_new, rgl_config.
+/* DOCUMENT rgl_info;
+         or rgl_info, NAME1, NAME2, ...;
+         or rgl_info(NAME);
+         or rgl_info();
+
+     Get information about implemented regularizations.  The following calling
+     sequences are implemented:
+
+         rgl_info;
+             Lists all implemented regularization methods and their
+             configurable attributes (e.g. hyper-parameters).
+
+         rgl_info, NAME1, NAME2, ...;
+             Lists attributes for regularization methods NAME1, NAME2, ...
+
+         rgl_info(NAME);
+             Returns list of attributes for regularization method NAME.
+
+         rgl_info();
+             Returns sorted list of all implemented regularization methods.
+
+     The RGL package, implements the following "public" functions, (for more
+     details about function FN, use: help, FN):
+
+        rgl_new - create a new instance of regularization method.
+        rgl_config - configure regularization parameter(s).
+
+   SEE ALSO: rgl_new, rgl_config.
  */
 {
   local arg, argv;
@@ -132,20 +136,21 @@ func rgl_info(..)
 _RGL_CLASS = h_new(); /* used to store implemented regularization classes */
 local rgl_new, _rgl_new;
 /* DOCUMENT obj = rgl_new(class);
- *       or obj = rgl_new(class, "attr1", value1, "attr2", value2, ...);
- *       or obj = rgl_new(class, attr1=value1, attr2=value2, ...);
- *
- *   Returns new instance for a specific regularization method.  CLASS can be
- *   a regularization class name (such as "quadratic") or a regularization
- *   class definition (OTHER.class where OTHER is an existing regularization
- *   instance).
- *
- *   Subsequent arguments are keywords or pairs of attribute name and value to
- *   set for the regularizer instance (see rgl_config).
- *
- * SEE ALSO: rgl_config, rgl_update, rgl_get_penalty, rgl_get_gradient,
- *           rgl_get_hessian, rgl_get_diagonal_of_hessian, rgl_apply_hessian,
- *           rgl_get_name.
+         or obj = rgl_new(class, "attr1", value1, "attr2", value2, ...);
+         or obj = rgl_new(class, attr1=value1, attr2=value2, ...);
+
+     Returns new instance for a specific regularization method.  CLASS can be a
+     regularization class name (such as "quadratic") or a regularization class
+     definition (OTHER.class where OTHER is an existing regularization
+     instance).
+
+     Subsequent arguments are keywords or pairs of attribute name and value to
+     set for the regularizer instance (see rgl_config).
+
+
+   SEE ALSO: rgl_config, rgl_update, rgl_get_penalty, rgl_get_gradient,
+             rgl_get_hessian, rgl_get_diagonal_of_hessian, rgl_apply_hessian,
+             rgl_get_name.
  */
 
 func _rgl_new(class, ..) /* DOCUMENTED */
@@ -236,48 +241,48 @@ func rgl_new(args) /* DOCUMENTED */
 local _rgl_config_from_hash, _rgl_config_attribute, _rgl_config_query;
 local rgl_config, _rgl_config, _rgl_attribute_index;
 /* DOCUMENT rgl_config, this, ..., attr, value, ..., attr=value, ...;
- *     -or- rgl_config, this, ..., cfg, ...;
- *     -or- rgl_config(this);
- *     -or- rgl_config(this, attr);
- *
- *   When called as a subroutine, rgl_config is used to set the value(s) of
- *   configurable attribute(s) of the regularization instance THIS.  Settings
- *   consist in ATTR, VALUE pairs or in CFG hash table.  ATTR and VALUE are an
- *   attribute name (or index) and its new value; keys and associated values in
- *   CFG table are used as attribute names and values.  There may be as many
- *   settings as needed.  If you have a recent version of Yorick (which support
- *   wrap_args), attributes may also be specified as keywords, like in
- *   ATTR=VALUE.
- *
- *   When called as a function, rgl_config is used to query the attributes of
- *   the regularization instance THIS.  Without any other argument, the result
- *   is the list of configurable attribute names. Otherwise, ATTR is the name
- *   (or the index) of an attribute and the result is the current attribute
- *   value.  As a special case, if ATTR is "*" or -1, all the attributes are
- *   returned in the form of a hash-table which can be used to configure
- *   another regularization instance.
- *
- *   For instance:
- *     rgl = rgl_new("xsmooth");
- *     rgl_config, rgl, threshold=1e-4, dimlist=[2,512,512];
- *   or:
- *     rgl_config, rgl, "threshold", 1e-4, "dimlist", [2,512,512];
- *   or:
- *     rgl_config, rgl, h_new(threshold=1e-4, dimlist=[2,512,512]);
- *
- *   The threshold value is obtained by:
- *     rgl_config(rgl, "threshold")
- *
- *   Example to print out hyper-parameter names and types:
- *
- *     list = rgl_config(this);
- *     for (k = 1; k <= numberof(list); ++k) {
- *       write, format="%2d: \"%s\" = %s\n", k, list(k),
- *         pr1(rgl_config(this, k));
- *     }
- *
- *
- * SEE ALSO: rgl_new, rgl_get_global_weight, rgl_set_global_weight, h_new.
+       -or- rgl_config, this, ..., cfg, ...;
+       -or- rgl_config(this);
+       -or- rgl_config(this, attr);
+
+     When called as a subroutine, rgl_config is used to set the value(s) of
+     configurable attribute(s) of the regularization instance THIS.  Settings
+     consist in ATTR, VALUE pairs or in CFG hash table.  ATTR and VALUE are an
+     attribute name (or index) and its new value; keys and associated values in
+     CFG table are used as attribute names and values.  There may be as many
+     settings as needed.  If you have a recent version of Yorick (which support
+     wrap_args), attributes may also be specified as keywords, like in
+     ATTR=VALUE.
+
+     When called as a function, rgl_config is used to query the attributes of
+     the regularization instance THIS.  Without any other argument, the result
+     is the list of configurable attribute names. Otherwise, ATTR is the name
+     (or the index) of an attribute and the result is the current attribute
+     value.  As a special case, if ATTR is "*" or -1, all the attributes are
+     returned in the form of a hash-table which can be used to configure
+     another regularization instance.
+
+     For instance:
+       rgl = rgl_new("xsmooth");
+       rgl_config, rgl, threshold=1e-4, dimlist=[2,512,512];
+     or:
+       rgl_config, rgl, "threshold", 1e-4, "dimlist", [2,512,512];
+     or:
+       rgl_config, rgl, h_new(threshold=1e-4, dimlist=[2,512,512]);
+
+     The threshold value is obtained by:
+       rgl_config(rgl, "threshold")
+
+     Example to print out hyper-parameter names and types:
+
+       list = rgl_config(this);
+       for (k = 1; k <= numberof(list); ++k) {
+         write, format="%2d: \"%s\" = %s\n", k, list(k),
+           pr1(rgl_config(this, k));
+       }
+
+
+   SEE ALSO: rgl_new, rgl_get_global_weight, rgl_set_global_weight, h_new.
  */
 
 func rgl_config(args) /* DOCUMENTED */
@@ -424,10 +429,10 @@ if (is_func(errs2caller) == 2) {
 }
 
 func _rgl_attribute_index(this, attr, query)
-/** DOCUMENT  _rgl_attribute_index(this, attr, query)
- *    Private function to get index of attribute ATTR for regularization
- *    instance THIS.
- * SEE ALSO: rgl_config.
+/** DOCUMENT  _rgl_attribute_index(this, attr, query);
+      Private function to get index of attribute ATTR for regularization
+      instance THIS.
+   SEE ALSO: rgl_config.
  */
 {
   if (is_scalar(attr)) {
@@ -453,18 +458,18 @@ func _rgl_attribute_index(this, attr, query)
 
 local rgl_get_global_weight, rgl_set_global_weight;
 /* DOCUMENT mu = rgl_get_global_weight(this);
- *     -or- rgl_set_global_weight, this, mu;
- *
- *   Query or set the regularization global weight MU from/in regularization
- *   instance THIS.  Note that, by definition, the global regularization
- *   weight is the first hyper-parameter in THIS, therefore these routines are
- *   simple shortcuts for:
- *
- *       mu = rgl_config(this, 1);
- *       rgl_config, this, 1, mu;
- *
- *
- * SEE ALSO: rgl_new, rgl_config.
+       -or- rgl_set_global_weight, this, mu;
+
+     Query or set the regularization global weight MU from/in regularization
+     instance THIS.  Note that, by definition, the global regularization weight
+     is the first hyper-parameter in THIS, therefore these routines are simple
+     shortcuts for:
+
+         mu = rgl_config(this, 1);
+         rgl_config, this, 1, mu;
+
+
+   SEE ALSO: rgl_new, rgl_config.
  */
 
 func rgl_get_global_weight(this)
@@ -481,38 +486,37 @@ local rgl_update, rgl_get_penalty;
 local rgl_get_gradient, rgl_apply_hessian;
 local rgl_get_hessian, rgl_get_diagonal_of_hessian;
 /* DOCUMENT rgl_update, this, x;
- *     -or- f = rgl_get_penalty(this, x);
- *     -or- g = rgl_get_gradient(this, x);
- *     -or- p = rgl_apply_hessian(this, x, s);
- *     -or- d = rgl_get_diagonal_of_hessian(this, x);
- *     -or- h = rgl_get_hessian(this, x);
- *
- *   The subroutine rgl_update setup internals of regularization instance THIS
- *   to account for a change of parameters, X are the new parameters.  Note
- *   that the setup may be delayed (for efficiency reasons) until the first
- *   call to one of the subsequent routines.  The subroutine rgl_update must
- *   be called *before* rgl_get_penalty, rgl_get_gradient, rgl_apply_hessian,
- *   etc.  This is mandatory to allow the caching of intermediate quantities
- *   and to speed up computations when the penalty and/or the gradient and/or
- *   the Hessian are needed for the same set of parameters X.  It is also
- *   mandatory that the following functions get called with the same
- *   parameters X as rgl_update.
- *
- *   F is the value of the regularization at X.
- *
- *   G is the gradient of the regularization at X.
- *
- *   P is the result of applying the Hessian approximation of the
- *   regularization at X to the parameter step S.
- *
- *   D is the diagonal approximation of the Hessian of the regularization at
- *   X.
- *
- *   H is the approximation of the Hessian of the regularization at X.
- *
- *
- * SEE ALSO:
- *   rgl_new, rgl_config.
+         or f = rgl_get_penalty(this, x);
+         or g = rgl_get_gradient(this, x);
+         or p = rgl_apply_hessian(this, x, s);
+         or d = rgl_get_diagonal_of_hessian(this, x);
+         or h = rgl_get_hessian(this, x);
+
+     The subroutine rgl_update setup internals of regularization instance THIS
+     to account for a change of parameters, X are the new parameters.  Note
+     that the setup may be delayed (for efficiency reasons) until the first
+     call to one of the subsequent routines.  The subroutine rgl_update must be
+     called *before* rgl_get_penalty, rgl_get_gradient, rgl_apply_hessian, etc.
+     This is mandatory to allow the caching of intermediate quantities and to
+     speed up computations when the penalty and/or the gradient and/or the
+     Hessian are needed for the same set of parameters X.  It is also mandatory
+     that the following functions get called with the same parameters X as
+     rgl_update.
+
+     F is the value of the regularization at X.
+
+     G is the gradient of the regularization at X.
+
+     P is the result of applying the Hessian approximation of the
+     regularization at X to the parameter step S.
+
+     D is the diagonal approximation of the Hessian of the regularization at X.
+
+     H is the approximation of the Hessian of the regularization at X.
+
+
+   SEE ALSO:
+     rgl_new, rgl_config.
  */
 
 func rgl_update(this, x)
@@ -547,11 +551,11 @@ func rgl_apply_hessian(this, x, s)
 
 func rgl_get_name(this) { return this.class.name; }
 /* DOCUMENT rgl_get_name(this)
- *
- *   Returns name of regularization method implemented by
- *   regularization instance THIS.
- *
- * SEE ALSO: rgl_new.
+
+     Returns name of regularization method implemented by regularization
+     instance THIS.
+
+   SEE ALSO: rgl_new.
  */
 
 func _rgl_check_class(class)
@@ -559,6 +563,28 @@ func _rgl_check_class(class)
   return (is_hash(class) && is_symlink((setup = class.setup)) &&
           is_func(value_of_symlink(setup)) && is_string(class.name) &&
           is_scalar(class.name));
+}
+
+local rgl_compute_f, rgl_compute_fg;
+/* DOCUMENT f = rgl_compute_f(rgl, x);
+         or f = rgl_compute_fg(rgl, x, g);
+
+     Compute the regularization penalty F at X and, possibly, the gradient G
+     (which must be a caller variable).
+
+   SEE ALSO: rgl_new. */
+
+func rgl_compute_f(this, x)
+{
+  rgl_update, this, x;
+  return rgl_get_penalty(this, x);
+}
+
+func rgl_compute_fg(this, x, &g)
+{
+  rgl_update, this, x;
+  g = rgl_get_gradient(this, x);
+  return rgl_get_penalty(this, x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -569,12 +595,13 @@ _RGL_METHODS = ["update", "get_penalty", "get_gradient", "get_hessian",
                 "get_attr", "set_attr", "setup"];
 
 func _rgl_class(name, attr)
-/* DOCUMENT class = _rgl_class(name, attr)
- *   Build class definition for regularization method.  NAME is a scalar
- *   string which identifies the regularization method.  ATTR is an array of
- *   strings with attribute (or hyper-parameter) names.
- *
- * SEE ALSO: rgl_new.
+/* DOCUMENT class = _rgl_class(name, attr);
+
+     Build class definition for regularization method.  NAME is a scalar string
+     which identifies the regularization method.  ATTR is an array of strings
+     with attribute (or hyper-parameter) names.
+
+   SEE ALSO: rgl_new.
  */
 {
   class = h_new(name=name);
@@ -660,11 +687,12 @@ func _rgl_bogus_set_attr(this, x)
 
 func _rgl_get_symbol(str)
 /* DOCUMENT _rgl_get_symbol(str);
- *   Returns symbol with name STR or nil if it doesn't exists.  This function
- *   is mainly a workaround of builtin symbol_def which raises an error if STR
- *   was never defined.
- *
- * SEE ALSO: symbol_exists, symbol_def.
+
+     Returns symbol with name STR or nil if it doesn't exists.  This function
+     is mainly a workaround of builtin symbol_def which raises an error if STR
+     was never defined.
+
+   SEE ALSO: symbol_exists, symbol_def.
  */
 {
   if (symbol_exists(str)) {
@@ -674,13 +702,14 @@ func _rgl_get_symbol(str)
 
 func _rgl_symlink_to_name(str) { return link(str + ""); }
 /* DOCUMENT _rgl_symlink_to_name(str);
- *   The _rgl_symlink_to_name function returns symbolic link to value of STR
- *   which must be a scalar string.  This is a workaround the link function
- *   (which see) which returns a link to the symbol's name rather than the
- *   symbol's value when called with a simple symbol as argument (i.e. not an
- *   expression).
- *
- * SEE ALSO: link, _rgl_class.
+
+     The _rgl_symlink_to_name function returns symbolic link to value of STR
+     which must be a scalar string.  This is a workaround the link function
+     (which see) which returns a link to the symbol's name rather than the
+     symbol's value when called with a simple symbol as argument (i.e. not an
+     expression).
+
+   SEE ALSO: link, _rgl_class.
  */
 if (is_func(symlink_to_name) == 2 && is_func(is_symlink) == 2 &&
     is_func(name_of_symlink) == 2 && is_func(value_of_symlink) == 2) {
@@ -703,20 +732,20 @@ if (is_func(symlink_to_name) == 2 && is_func(is_symlink) == 2 &&
 
 local rgl_smoothness;
 /* DOCUMENT this = rgl_new("smoothness");
- *
- *   Creates a regularization instance suitable for quadratic smoothness
- *   regularization.  The regularization penalty for an array X is:
- *
- *       mu*||D.x||^2
- *
- *   where mu is the global regularization weight and D is a linear operator
- *   such that: D.x = x - smooth3(x).
- *
- *   This regularization has one hyper-parameter:
- *
- *     1 - "mu" = global regularization weight.
- *
- * SEE ALSO: rgl_new, smooth3.
+
+     Creates a regularization instance suitable for quadratic smoothness
+     regularization.  The regularization penalty for an array X is:
+
+         mu*||D.x||^2
+
+     where mu is the global regularization weight and D is a linear operator
+     such that: D.x = x - smooth3(x).
+
+     This regularization has one hyper-parameter:
+
+       1 - "mu" = global regularization weight.
+
+   SEE ALSO: rgl_new, smooth3.
  */
 
 func _rgl_smoothness_setup(this)
@@ -790,24 +819,24 @@ _rgl_class, "smoothness", "mu";
 
 local rgl_roughness;
 /* DOCUMENT obj = rgl_new("roughness");
- *
- *   Creates a regularization instance suitable for minimizing the roughness
- *   of the parameters by various cost functions. The regularization penalty
- *   writes:
- *
- *     fprior(x) = cost([mu, threshold], D.x)
- *
- *   where D is some finite differences operator.
- *
- *   This regularization has the following hyper-parameters:
- *
- *     1 - "mu"        = global regularization weight.
- *     2 - "threshold" = threshold for L2-L1 or L2-L0 norms.
- *     3 - "cost"      = name of cost function: "l1", "l2", "l2l1", "l2l0",
- *                       or "cauchy"; default is "l2" (i.e. quadratic).
- *     4 - "periodic"  = true for periodic roughness.
- *
- * SEE ALSO: rgl_new, rgl_roughness_l2.
+
+     Creates a regularization instance suitable for minimizing the roughness of
+     the parameters by various cost functions. The regularization penalty
+     writes:
+
+       fprior(x) = cost([mu, threshold], D.x)
+
+     where D is some finite differences operator.
+
+     This regularization has the following hyper-parameters:
+
+       1 - "mu"        = global regularization weight.
+       2 - "threshold" = threshold for L2-L1 or L2-L0 norms.
+       3 - "cost"      = name of cost function: "l1", "l2", "l2l1", "l2l0",
+                         or "cauchy"; default is "l2" (i.e. quadratic).
+       4 - "periodic"  = true for periodic roughness.
+
+   SEE ALSO: rgl_new, rgl_roughness_l2.
  */
 
 func _rgl_roughness_setup(this)
@@ -934,20 +963,20 @@ _rgl_class, "roughness", ["mu", "threshold", "cost", "periodic"];
 
 local rgl_l2l1_smoothness;
 /* DOCUMENT obj = rgl_new("l2l1_smoothness");
- *
- *   Creates a regularization instance suitable for l2-l1 smoothness
- *   regularization.
- *
- *   The regularization penalty writes:
- *
- *     fprior(x) = cost_l2l1([mu, threshold], x - smooth3(x))
- *
- *   This regularization has the following hyper-parameters:
- *
- *     1 - "mu"        = global regularization weight.
- *     2 - "threshold" = threshold for L2-L1.
- *
- * SEE ALSO: rgl_new, cost_l2l1, smooth3.
+
+     Creates a regularization instance suitable for l2-l1 smoothness
+     regularization.
+
+     The regularization penalty writes:
+
+       fprior(x) = cost_l2l1([mu, threshold], x - smooth3(x))
+
+     This regularization has the following hyper-parameters:
+
+       1 - "mu"        = global regularization weight.
+       2 - "threshold" = threshold for L2-L1.
+
+   SEE ALSO: rgl_new, cost_l2l1, smooth3.
  */
 
 func _rgl_l2l1_smoothness_setup(this)
@@ -1019,46 +1048,45 @@ _rgl_class, "l2l1_smoothness", ["mu", "threshold"];
 
 local rgl_quadratic;
 /* DOCUMENT obj = rgl_new("quadratic");
- *
- *   Create a regularizer instance for general quadratic regularization.
- *
- *   The general expressions of the penalty and its partial derivatives are
- *   (the dot and the prime indicate dot product and matrix transposition
- *   respectively):
- *
- *       f(x) = mu [A.x - b]'.W.[A.x - b]        (penalty)
- *
- *       g(x) = 2 mu A'.W.[A.x - b]              (gradient)
- *
- *       G    = 2 mu A'.W.A                      (Hessian)
- *
- *   where:
- *
- *       mu = 1-st hyper-parameter
- *       A  = 2-nd hyper-parameter (default: identity)
- *       b  = 3-rd hyper-parameter (default: 0)
- *       W  = 4-th hyper-parameter (default: identity)
- *
- *   If specifed, b must be an array conformable with x.
- *
- *   If specified, A can be an array (diagonal weighting matrix) or a sparse
- *   matrix (see sparse_matrix) or a linear operator object (see linop_new).
- *   The default is the identity.
- *
- *   If specified, W can be an array (diagonal weighting matrix) or a sparse
- *   matrix (see sparse_matrix) or a linear operator object (see linop_new);
- *   whatever is W, it must correspond to a symmetric positive semi-definite
- *   matrix operation.  The default is the identity.
- *
- *   Note that W and A are memorized as linear operator objects (see
- *   linop_new) which must not be forgotten if you use `rgl_config` to query
- *   them.
- *
- *   As a convenience, it is possible to query the hyper-parameters by their
- *   names.
- *
- *
- * SEE ALSO: rgl_info, rgl_config, rgl_identity, sparse_matrix, linop_new.
+
+     Create a regularizer instance for general quadratic regularization.
+
+     The general expressions of the penalty and its partial derivatives are
+     (the dot and the prime indicate dot product and matrix transposition
+     respectively):
+
+         f(x) = mu [A.x - b]'.W.[A.x - b]        (penalty)
+
+         g(x) = 2 mu A'.W.[A.x - b]              (gradient)
+
+         G    = 2 mu A'.W.A                      (Hessian)
+
+     where:
+
+         mu = 1-st hyper-parameter
+         A  = 2-nd hyper-parameter (default: identity)
+         b  = 3-rd hyper-parameter (default: 0)
+         W  = 4-th hyper-parameter (default: identity)
+
+     If specifed, b must be an array conformable with x.
+
+     If specified, A can be an array (diagonal weighting matrix) or a sparse
+     matrix (see sparse_matrix) or a linear operator object (see linop_new).
+     The default is the identity.
+
+     If specified, W can be an array (diagonal weighting matrix) or a sparse
+     matrix (see sparse_matrix) or a linear operator object (see linop_new);
+     whatever is W, it must correspond to a symmetric positive semi-definite
+     matrix operation.  The default is the identity.
+
+     Note that W and A are memorized as linear operator objects (see linop_new)
+     which must not be forgotten if you use `rgl_config` to query them.
+
+     As a convenience, it is possible to query the hyper-parameters by their
+     names.
+
+
+   SEE ALSO: rgl_info, rgl_config, rgl_identity, sparse_matrix, linop_new.
  */
 
 func _rgl_quadratic_setup(this)
@@ -1152,11 +1180,11 @@ _rgl_class, "quadratic", ["mu", "A", "b", "W"];
 
 func rgl_xsmooth_residuals(this, x)
 /* DOCUMENT rgl_xsmooth_residuals(this, x)
- *
- *   Retuns sample of residual values for unknown X.  THIS must be an
- *   instance of a "xsmooth" regularization.
- *
- * SEE ALSO: rgl_new.
+
+     Retuns sample of residual values for unknown X.  THIS must be an
+     instance of a "xsmooth" regularization.
+
+   SEE ALSO: rgl_new.
  */
 {
   if (is_void(this.a)) {
@@ -1294,23 +1322,22 @@ _rgl_class, "xsmooth", ["mu", "threshold", "cost", "dimlist", "isotropic"];
 
 func rgl_make_2d_finite_difference_matrix(dimlist, which, ..)
 /* DOCUMENT
- *
- *   rgl_make_2d_finite_difference_matrix(dimlist, which,
- *                                        scale, offset, ...)
- *
- *   Return sparse matrix which compute 2-D finite difference of its
- *   argument.
- *
- *   a(..., i1 + 1, ..., i2, ...) - a(..., i1, ..., i2, ...)
- *
- *   For instance to compute isotropic finite differences between the 2-nd
- *   and 4-th dimensions:
- *
- *   rgl_make_2d_finite_difference_matrix(dimlist, [2, 4],
- *                                        1.0,       [+1,  0],
- *                                        1.0,       [ 0, +1],
- *                                        sqrt(2.0), [+1, +1],
- *                                        sqrt(2.0), [+1, -1]);
+
+     rgl_make_2d_finite_difference_matrix(dimlist, which,
+                                          scale, offset, ...)
+
+     Return sparse matrix which compute 2-D finite difference of its argument.
+
+     a(..., i1 + 1, ..., i2, ...) - a(..., i1, ..., i2, ...)
+
+     For instance to compute isotropic finite differences between the 2-nd and
+     4-th dimensions:
+
+     rgl_make_2d_finite_difference_matrix(dimlist, [2, 4],
+                                          1.0,       [+1,  0],
+                                          1.0,       [ 0, +1],
+                                          sqrt(2.0), [+1, +1],
+                                          sqrt(2.0), [+1, -1]);
  */
 {
   /* Check/fix dimension list. */
@@ -1465,35 +1492,278 @@ func rgl_make_2d_finite_difference_matrix(dimlist, which, ..)
 }
 
 /*---------------------------------------------------------------------------*/
+/* HYPERBOLIC EDGE-PRESERVING SMOOTHNESS (1D or 2D) */
+
+local rgl_hyperbolic;
+/* DOCUMENT this = rgl_new("hyperbolic");
+
+     Creates a regularizer to impose "edge preserving smoothness" via an
+     hyperbolic cost function.  The regularization penalty writes:
+
+         mu*sum(dx)
+
+     where DX is the length of the local gradient of X along its dimensions:
+
+        DX = sqrt(DX1^2 + DX2^2 + ... + TAU^2) - TAU
+
+     where DXn is the partial derivative of X along n-th dimension scaled by
+     parameter ETA.
+
+     This regularization has the following hyper-parameters:
+
+       1 - "mu"   = global regularization weight;
+       2 - "tau"  = edge threshold;
+       3 - "eta"  = scaling of finite difference along each dimension, can be
+                    zero to avoid regularizing along the corresponding
+                    dimension.
+       4 - "mask" = mask, an array of 0/1 where pixels are to be
+                    ignored/considered.
+
+     Note that by using a negligible TAU compared to the Euclidian norm of the
+     scaled gradient, isotropic total-variation (TV) is mimicked.
+
+
+   SEE ALSO: rgl_new. */
+
+func _rgl_hyperbolic_setup(self)
+{
+  return h_set(self, state=0, eta=1.0, tau=1e-8);
+}
+
+func _rgl_hyperbolic_update(self, x)
+{
+  if (! is_array(x)) {
+    error, "expecting array argument";
+  }
+  rank = numberof(dimsof(x)) - 1;
+  if (! is_scalar(self.eta) && numberof(self.eta) != rank) {
+    error, "bad number of dimensions/scales";
+  }
+  h_set, self, state=0, rank=rank, w=[], r=[], d1=[], d2=[], d3=[], d4=[];
+}
+
+func _rgl_hyperbolic_state1(self, x)
+{
+  local mask; eq_nocopy, mask, self.mask;
+  rank = self.rank;
+  mu = self.mu;
+  t = abs(mu*self.tau);
+  w = abs2(mu*self.eta)*array(1.0, rank);
+  i = 1:-1;
+  j = 2:0;
+  if (rank == 1) {
+    w1 = w(1);
+    d1 = x(dif);
+    if (! is_void(mask)) {
+      d1 = mask(i)*mask(j)*unref(d1);
+    }
+    r = sqrt(w1*d1*d1 + t*t);
+    err = sum(r) - numberof(r)*t;
+    h_set, self, state=1, err=err, w=w, r=r, d1=d1;
+  } else if (rank == 2) {
+    w /= 2; // because each direction appears twice
+    w1 = w(1);
+    w2 = w(2);
+    if (w1 > 0 && w2 > 0) {
+      d1 = (x2 = x(i,j)) - (x1 = x(i,i));
+      d2 = (x4 = x(j,j)) - (x3 = x(j,i));
+      d3 = unref(x3) - unref(x1);
+      d4 = unref(x4) - unref(x2);
+      if (! is_void(mask)) {
+        d1 = unref(d1)*(m2 = mask(i,j))*(m1 = mask(i,i));
+        d2 = unref(d2)*(m4 = mask(j,j))*(m3 = mask(j,i));
+        d3 = unref(d3)*unref(m3)*unref(m1);
+        d4 = unref(d4)*unref(m4)*unref(m2);
+      }
+      if (w1 == w2) {
+        r = sqrt((d1*d1 + d2*d2 + d3*d3 + d4*d4)*w1 + t*t);
+      } else {
+        r = sqrt((d1*d1 + d2*d2)*w1 + (d3*d3 + d4*d4)*w2 + t*t);
+      }
+    } else if (w1 > 0) {
+      d1 = x(i,j) - x(i,i);
+      d2 = x(j,j) - x(j,i);
+      if (! is_void(mask)) {
+        d1 = unref(d1)*mask(i,j)*mask(i,i);
+        d2 = unref(d2)*mask(j,j)*mask(j,i);
+      }
+      r = sqrt((d1*d1 + d2*d2)*w1 + t*t);
+    } else if (w2 > 0) {
+      d3 = x(j,i) - x(i,i);
+      d4 = x(j,j) - x(i,j);
+      if (! is_void(mask)) {
+        d3 = unref(d3)*mask(j,i)*mask(i,i);
+        d4 = unref(d4)*mask(j,j)*mask(i,j);
+      }
+      r = sqrt((d3*d3 + d4*d4)*w2 + t*t);
+    } else {
+      h_set, self, state=1, err=0.0;
+      return;
+    }
+    err = sum(r) - numberof(r)*t;
+    h_set, self, state=1, err=err, w=w, r=r, d1=d1, d2=d2, d3=d3, d4=d4;
+  } else {
+    error, "unsupported number of dimensions";
+  }
+}
+
+func _rgl_hyperbolic_state2(self, x)
+{
+  if (self.state < 1) _rgl_hyperbolic_state1, self, x;
+  g = array(double, dimsof(x));
+  local r; eq_nocopy, r, self.r;
+  local w; eq_nocopy, w, self.w;
+  i = 1:-1;
+  j = 2:0;
+  rank = self.rank;
+  if (rank == 1) {
+    w1 = w(1);
+    if (w1 > 0) {
+      d1 = (w1/r)*self.d1;
+      g(j) = d1;
+      g(i) -= d1;
+    }
+  } else if (rank == 2) {
+    local q1, q2;
+    w1 = w(1);
+    w2 = w(2);
+    if (w1 > 0 && w2 > 0) {
+      q1 = w1/r;
+      if (w1 == w2) {
+        eq_nocopy, q2, q1;
+      } else {
+        q2 = (w2/w1)*q1;
+      }
+      d1 = q1*self.d1;
+      d2 = q1*self.d2;
+      d3 = q2*self.d3;
+      d4 = q2*self.d4;
+      g(i,i) = -d1 - d3;
+      g(i,j) += d1 - d4;
+      g(j,i) += d3 - d2;
+      g(j,j) += d2 + d4;
+    } else if (w1 > 0) {
+      q1 = w1/r;
+      d1 = q1*self.d1;
+      d2 = q1*self.d2;
+      g(i,i) = -d1;
+      g(i,j) += d1;
+      g(j,i) -= d2;
+      g(j,j) += d2;
+    } else if (w2 > 0) {
+      q2 = w2/r;
+      d3 = q2*self.d3;
+      d4 = q2*self.d4;
+      g(i,i) = -d3;
+      g(i,j) -= d4;
+      g(j,i) += d3;
+      g(j,j) += d4;
+    }
+  } else {
+    error, "unsupported number of dimensions";
+  }
+  h_set, self, state=2, grd=g;
+}
+
+func _rgl_hyperbolic_get_penalty(self, x)
+{
+  if (self.state < 1) _rgl_hyperbolic_state1, self, x;
+  return self.err;
+}
+
+func _rgl_hyperbolic_get_gradient(self, x)
+{
+  if (self.state < 2) _rgl_hyperbolic_state2, self, x;
+  return self.grd;
+}
+
+#if 0
+func _rgl_hyperbolic_apply_hessian(self, x, s) {}
+func _rgl_hyperbolic_get_hessian(self, x) {}
+func _rgl_hyperbolic_get_diagonal_of_hessian(self, x) {}
+#endif
+
+func _rgl_hyperbolic_get_attr(self, index)
+{
+  if (index == 1) return self.mu;
+  if (index == 2) return self.tau;
+  if (index == 3) return self.eta;
+  if (index == 4) return self.mask;
+}
+
+func _rgl_hyperbolic_set_attr(self, index, value)
+{
+  if (index == 1) {
+    if (rgl_real_scalar(value) || value < 0.0) {
+      error, "\"global\" regularization weight must be a non-negative real";
+    }
+    if (value != self.mu) {
+      h_set, self, mu = double(value), state = 0;
+    }
+  }
+  if (index == 2) {
+    if (rgl_real_scalar(value) || value <= 0.0) {
+      error, "\"tau\" must be a strictly non-negative real";
+    }
+    if (value != self.tau) {
+      h_set, self, tau = double(value), state = 0;
+    }
+  }
+  if (index == 3) {
+    if (identof(value) > Y_DOUBLE || numberof(dimsof(value)) > 2 ||
+        min(value) < 0) {
+      error, "\"eta\" must be a nonnegative real scalar or vector";
+    }
+    if (numberof(value) != numberof(self.eta) || anyof(value != self.eta)) {
+      value = double(value); // convert and copy
+      h_set, self, eta = value, state = 0;
+    }
+  }
+  if (index == 4) {
+    if (is_void(value)) {
+      h_set, self, mask = [], state = 0;
+    } else if (numberof(dimsof(value)) == 3 && identof(value) <= Y_DOUBLE) {
+      zero = structof(value)(0);
+      h_set, self, mask = double(value != zero), state = 0;
+    } else {
+      error, "\"mask\" must be a 2-D boolean array";
+    }
+  }
+}
+
+/* After having defined all class methods, define the class itself: */
+_rgl_class, "hyperbolic", ["mu", "tau", "eta", "mask"];
+
+/*---------------------------------------------------------------------------*/
 /* (ISOTROPIC) TOTAL VARIATION (2D) */
 
 local rgl_totvar;
 /* DOCUMENT this = rgl_new("totvar");
- *
- *   Creates a regularizer instance suitable for "Total Variation" (TV)
- *   regularization.  The regularization penalty writes:
- *
- *       mu*sum(dx)
- *
- *   where DX is the length of the local gradient of X along its dimensions:
- *
- *      DX = sqrt(DX1^2 + DX2^2 + ... + EPSILON^2)
- *
- *   where DXn is the partial derivative of X along n-th dimension.
- *
- *   This regularization has the following hyper-parameters:
- *
- *     1 - "mu" = global regularization weight;
- *     2 - "epsilon" = small value to get rid of singularities;
- *     3 - "isotropic" = flag: use isotropic "Total Variation".
- *     4 - "mask" = mask, an array of 0/1 where pixels are to be
- *                  ignored/considered.
- *
- *   Note that by using a small but not negligible EPSILON, edge-preserving
- *   smoothness is achieved.
- *
- *
- * SEE ALSO: rgl_new, smooth3.
+
+     Creates a regularizer instance suitable for "Total Variation" (TV)
+     regularization.  The regularization penalty writes:
+
+         mu*sum(dx)
+
+     where DX is the length of the local gradient of X along its dimensions:
+
+        DX = sqrt(DX1^2 + DX2^2 + ... + EPSILON^2)
+
+     where DXn is the partial derivative of X along n-th dimension.
+
+     This regularization has the following hyper-parameters:
+
+       1 - "mu" = global regularization weight;
+       2 - "epsilon" = small value to get rid of singularities;
+       3 - "isotropic" = flag: use isotropic "Total Variation".
+       4 - "mask" = mask, an array of 0/1 where pixels are to be
+                    ignored/considered.
+
+     Note that by using a small but not negligible EPSILON, edge-preserving
+     smoothness is achieved.
+
+
+   SEE ALSO: rgl_new, smooth3.
  */
 
 func _rgl_totvar_setup(self)
@@ -1770,72 +2040,72 @@ func rgl_new_quadratic_1(.., fwhm=, shape=, normalization=, method=)
 
 local rgl_entropy;
 /* DOCUMENT obj = rgl_new("entropy", ...)
- *
- *  Beware that if you use regularization based on entropy, you must insure
- *  that min(x) > 0 (strictly positive).  For instance:
- *
- *      XMIN = EPSILON/avg(X)   with EPSILON a small positive number
- *
- *  Possible definitions for neg-entropy regularization (and partial
- *  derivatives):
- *
- *    f1(x) = -mu*sum(sqrt(x + eps));
- *    g1(x) = -0.5*mu/sqrt(x + eps);
- *    h1(x) = diag(0.25*mu/((x + eps)*sqrt(x + eps));
- *
- *    f2(x) = -mu*sum(log(x + eps));
- *    g2(x) = -mu/(x + eps);
- *    h2(x) = diag(mu/(x + eps)^2);
- *
- *  Maximum entropy (no prior, X is normalized):
- *    f3(x) = mu*sum((x + eps)*log(x + eps));
- *    g3(x) = mu + mu*log(x + eps);
- *    h3(x) = diag(mu/(x + eps));
- *
- *  Maximum entropy (P is the prior, X is not normalized):
- *    f4(x) = mu*sum(p - x + (x + eps)*log((x + eps)/(p + eps)));
- *    g4(x) = mu*log((x + eps)/(p + eps));
- *    h4(x) = diag(mu/(x + eps));
- *
- *  Maximum entropy (P is the prior, X is normalized):
- *    f5(x) = mu*sum((x + eps)*log((x + eps)/(p + eps)));
- *    g5(x) = mu + mu*log((x + eps)/(p + eps));
- *    h5(x) = diag(mu/(x + eps));
- *
- *  Maximum entropy (prior linearly depends on X: p = A.x,
- *  A is any linear operator, X is not normalized):
- *    f6(x) = mu*sum(A.x - x + x*log(x/A.x));
- *    g6(x) = mu*(log(x/A.x) + A'.(1 - x/A.x));
- *    h6(x) = mu*(diag(1/x) + 2*A'.diag(x/A.x).A
- *                - A[j,k]/(A.x)[j] - A[k,j]/(A.x)[k]);
- *
- *  Maximum entropy (prior linearly depends on X: p = A.x,
- *  A is normalized such that sum(A.x) = sum(x), X is not normalized):
- *    f7(x) = mu*sum(x*log(x/A.x));
- *    g7(x) = mu*(log(x/A.x) - A'.(x/A.x));
- *
- *
- *  Attributes are:
- *    "mu"         (1) - global weight.
- *    "type"       (2) - type: "sqrt", or "log".
- *    "normalized" (3) - X is normalized?
- *    "prior"      (4) - prior p (if an array) or matrix A (if a linear
- *                       operator), or "none".
- *    "epsilon"    (5) - small value to get rid of singularities near zero,
- *                       denoted EPS in equations above (default is 1E-20).
- *
- *  Cases:
- *     Id. Type    Normalized   Prior   Negentropy
- *     -------------------------------------------------------------
- *     1   "sqrt"  0            nil     -mu*sum(sqrt(x))
- *     2   "log"   0            nil     -mu*sum(log(x))
- *     3   "log"   1            nil      mu*sum(x*log(x))
- *     4   "log"   0            p        mu*sum(p - x + x*log(x/p))
- *     5   "log"   1            p        mu*sum(x*log(x/p))
- *     6   "log"   0            A        mu*sum(A.x - x + x*log(x/A.x))
- *     7   "log"   1            A        mu*sum(x*log(x/A.x))
- *
- * SEE ALSO: rgl_new.
+
+    Beware that if you use regularization based on entropy, you must insure
+    that min(x) > 0 (strictly positive).  For instance:
+
+        XMIN = EPSILON/avg(X)   with EPSILON a small positive number
+
+    Possible definitions for neg-entropy regularization (and partial
+    derivatives):
+
+      f1(x) = -mu*sum(sqrt(x + eps));
+      g1(x) = -0.5*mu/sqrt(x + eps);
+      h1(x) = diag(0.25*mu/((x + eps)*sqrt(x + eps));
+
+      f2(x) = -mu*sum(log(x + eps));
+      g2(x) = -mu/(x + eps);
+      h2(x) = diag(mu/(x + eps)^2);
+
+    Maximum entropy (no prior, X is normalized):
+      f3(x) = mu*sum((x + eps)*log(x + eps));
+      g3(x) = mu + mu*log(x + eps);
+      h3(x) = diag(mu/(x + eps));
+
+    Maximum entropy (P is the prior, X is not normalized):
+      f4(x) = mu*sum(p - x + (x + eps)*log((x + eps)/(p + eps)));
+      g4(x) = mu*log((x + eps)/(p + eps));
+      h4(x) = diag(mu/(x + eps));
+
+    Maximum entropy (P is the prior, X is normalized):
+      f5(x) = mu*sum((x + eps)*log((x + eps)/(p + eps)));
+      g5(x) = mu + mu*log((x + eps)/(p + eps));
+      h5(x) = diag(mu/(x + eps));
+
+    Maximum entropy (prior linearly depends on X: p = A.x,
+    A is any linear operator, X is not normalized):
+      f6(x) = mu*sum(A.x - x + x*log(x/A.x));
+      g6(x) = mu*(log(x/A.x) + A'.(1 - x/A.x));
+      h6(x) = mu*(diag(1/x) + 2*A'.diag(x/A.x).A
+                  - A[j,k]/(A.x)[j] - A[k,j]/(A.x)[k]);
+
+    Maximum entropy (prior linearly depends on X: p = A.x,
+    A is normalized such that sum(A.x) = sum(x), X is not normalized):
+      f7(x) = mu*sum(x*log(x/A.x));
+      g7(x) = mu*(log(x/A.x) - A'.(x/A.x));
+
+
+    Attributes are:
+      "mu"         (1) - global weight.
+      "type"       (2) - type: "sqrt", or "log".
+      "normalized" (3) - X is normalized?
+      "prior"      (4) - prior p (if an array) or matrix A (if a linear
+                         operator), or "none".
+      "epsilon"    (5) - small value to get rid of singularities near zero,
+                         denoted EPS in equations above (default is 1E-20).
+
+    Cases:
+       Id. Type    Normalized   Prior   Negentropy
+       -------------------------------------------------------------
+       1   "sqrt"  0            nil     -mu*sum(sqrt(x))
+       2   "log"   0            nil     -mu*sum(log(x))
+       3   "log"   1            nil      mu*sum(x*log(x))
+       4   "log"   0            p        mu*sum(p - x + x*log(x/p))
+       5   "log"   1            p        mu*sum(x*log(x/p))
+       6   "log"   0            A        mu*sum(A.x - x + x*log(x/A.x))
+       7   "log"   1            A        mu*sum(x*log(x/A.x))
+
+   SEE ALSO: rgl_new.
  */
 
 func _rgl_entropy_setup(this)
@@ -2335,17 +2605,17 @@ _rgl_entropy7_ops = _rgl_build_ops("_rgl_entropy7_update",
 
 local rgl_clique;
 /* DOCUMENT obj = rgl_new("clique");
- *          rgl_config, obj, "region", region;
- *      or:
- *          obj = rgl_new("clique", "region", region);
- *
- *   Smoothness regularization by "cliques".  The penalty is the quadratic
- *   difference between adjacent pixels which belong to the same region.  The
- *   parameter REGION is an integer valued array with same dimension list as
- *   the image, same values in REGION indicate pixels which belong to the same
- *   clique.
- *
- * SEE ALSO: rgl_info, rgl_config, sparse_matrix, linop_new.
+            rgl_config, obj, "region", region;
+        or:
+            obj = rgl_new("clique", "region", region);
+
+     Smoothness regularization by "cliques".  The penalty is the quadratic
+     difference between adjacent pixels which belong to the same region.  The
+     parameter REGION is an integer valued array with same dimension list as
+     the image, same values in REGION indicate pixels which belong to the same
+     clique.
+
+   SEE ALSO: rgl_info, rgl_config, sparse_matrix, linop_new.
  */
 
 func _rgl_clique_setup(this)
@@ -2466,24 +2736,24 @@ func _rgl_clique_builder(this)
 }
 
 /*---------------------------------------------------------------------------*/
-/* SIMPLE L0 REGULARIZATION */
+/* SIMPLE L2-L0 REGULARIZATION */
 
 local rgl_simple;
 /* DOCUMENT this = rgl_new("simple");
- *
- *   Creates a regularization instance suitable for simple separable L2-L0
- *   regularization.
- *
- *   The regularization penalty for an image X is:
- *
- *      mu * eps^2 * atan(x/eps))^2
-*
- *   This regularization has two hyper-parameters:
- *
- *     1 - "mu" = global regularization weight.
- *     2 - "threshold" = value of threshold EPS.
- *
- * SEE ALSO: rgl_new, smooth3.
+
+     Creates a regularization instance suitable for simple separable L2-L0
+     regularization.
+
+     The regularization penalty for an image X is:
+
+        mu * eps^2 * atan(x/eps))^2
+
+     This regularization has two hyper-parameters:
+
+       1 - "mu" = global regularization weight.
+       2 - "threshold" = value of threshold EPS.
+
+   SEE ALSO: rgl_new, smooth3.
  */
 
 func _rgl_simple_setup(this)
@@ -2714,23 +2984,23 @@ _rgl_class, "simple", ["mu", "threshold", "cost"];
 
 local rgl_lpnorm;
 /* DOCUMENT this = rgl_new("lpnorm");
- *
- *   fprior(x) = sum(sqrt(x*x + eps*eps)^p)^(1/p) - n^(1/p)*eps
- *             = (sum r^(p/2))^(1/p) - n^(1/p)*eps
- *             = (sum q)^(1/p) - n^(1/p)*eps
- *
- *   gprior(p) = (sum r^(p/2))^(1/p - 1)*x*r^(p/2 - 1)
- *             = (sum q)^(1/p - 1)*x*q/r
- *
- *   with: N = numberof(X), R = X*X + EPS*EPS  and Q = R^(P/2)
- *
- *   This regularization has only one hyper-parameter:
- *
- *     1 - "mu" = global regularization weight.
- *     2 - "power" = power of the norm.
- *     3 - "epsilon" = small value.
- *
- * SEE ALSO: rgl_new, smooth3.
+
+     fprior(x) = sum(sqrt(x*x + eps*eps)^p)^(1/p) - n^(1/p)*eps
+               = (sum r^(p/2))^(1/p) - n^(1/p)*eps
+               = (sum q)^(1/p) - n^(1/p)*eps
+
+     gprior(p) = (sum r^(p/2))^(1/p - 1)*x*r^(p/2 - 1)
+               = (sum q)^(1/p - 1)*x*q/r
+
+     with: N = numberof(X), R = X*X + EPS*EPS  and Q = R^(P/2)
+
+     This regularization has only one hyper-parameter:
+
+       1 - "mu" = global regularization weight.
+       2 - "power" = power of the norm.
+       3 - "epsilon" = small value.
+
+   SEE ALSO: rgl_new, smooth3.
  */
 
 func _rgl_lpnorm_setup(self)
@@ -2816,13 +3086,47 @@ _rgl_class, "lpnorm", ["mu", "power", "epsilon"];
 /*---------------------------------------------------------------------------*/
 /* UTILITIES */
 
+func rgl_check_gradient(rgl, x, t)
+/* DOCUMENT rgl_check_gradient, reg, x;
+         or rgl_check_gradient, reg, x, t;
+
+     Check the gradient computed for regularization instance RGL at variables
+     X.  Optional argument T is the size of the perturbation to add to X to
+     compute the gradient by means of centered finite differences.  Its default
+     value is 1E-5 times the maximum absolute value of X.
+
+     When called as a subroutine, the maximum relative error for the gradient
+     is printed.  When called as function, the maximum relative error is
+     returned.
+ */
+{
+  if (is_void(t)) t = 1E-5*max(abs(x));
+  local g;
+  f = rgl_compute_fg(rgl, x, g);
+  x1 = x2 = x0;
+  gp = g;
+  for(i = 1; i <= numberof(x); ++i) {
+    xi = x(i);
+    x1(i) = xi + t;
+    x2(i) = xi - t;
+    gp(i) = rgl_compute_f(regul, x1) - rgl_compute_f(regul, x2);
+    x1(i) = xi;
+    x2(i) = xi;
+  }
+  gp *= 1.0/(2.0*t);
+  err = max(abs(gp - g))/max(abs(gp));
+  if (am_subroutine()) write, format = "maw. rel. error: %g\n", err;
+  return err;
+}
+
 func rgl_squared_distance(.., scale=)
 /* DOCUMENT rgl_squared_distance(dimlist, ...);
- *   Return squared distance with respect to the geometrical center of an
- *   array of dimension list DIMLIST.  Keyword SCALE can be used to specify
- *   a scale along every dimensions (SCALE can be a scalar or a vector).
- *
- * SEE ALSO: make_dimlist.
+
+     Returns the squared distance with respect to the geometrical center of an
+     array of dimension list DIMLIST.  Keyword SCALE can be used to specify a
+     scale along every dimensions (SCALE can be a scalar or a vector).
+
+   SEE ALSO: make_dimlist.
  */
 {
   dimlist = [0L]; // initial dimension list
@@ -2857,14 +3161,14 @@ func rgl_squared_distance(.., scale=)
 
 local rgl_integer_scalar, rgl_real_scalar, rgl_string_scalar;
 /* DOCUMENT rgl_integer_scalar(var);
- *     -or- rgl_real_scalar(var);
- *     -or- rgl_string_scalar(var);
- *     -or- rgl_boolean(var);
- *
- *   Returns non-zero (-1) if VAR is not a scalar of a given type; otherwise,
- *   fix VAR to be a double or long for the caller and returns zero.
- *
- * SEE ALSO: is_real, is_integer, is_string, is_scalar.
+         or rgl_real_scalar(var);
+         or rgl_string_scalar(var);
+         or rgl_boolean(var);
+
+     Returns non-zero (-1) if VAR is not a scalar of a given type; otherwise,
+     fix VAR to be a double or long for the caller and returns zero.
+
+   SEE ALSO: is_real, is_integer, is_string, is_scalar.
  */
 
 func rgl_integer_scalar(&x) /* DOCUMENTATION IS ABOVE */
@@ -2904,12 +3208,12 @@ func rgl_string_scalar(x) /* DOCUMENTATION IS ABOVE */
 
 func rgl_check_dimlist(&dimlist)
 /* DOCUMENT rgl_check_dimlist(dimlist)
- *   Check dimension list DIMLIST and return number of elements of array with
- *   that dimension list.  Possibly fix DIMLIST in-place so that is it always
- *   like the result of dimsof (which see).  Zero is returned in case of
- *   error.
- *
- * SEE ALSO: dimsof.
+
+     Check dimension list DIMLIST and return number of elements of array with
+     that dimension list.  Possibly fix DIMLIST in-place so that is it always
+     like the result of dimsof (which see).  Zero is returned in case of error.
+
+   SEE ALSO: dimsof.
  */
 {
   if (is_void(dimlist)) {
@@ -2958,10 +3262,11 @@ func rgl_check_dimlist(&dimlist)
 
 local rgl_identity;
 /* DOCUMENT rgl_identity(x);
- *       or rgl_identity(x, transp);
- *   Linear operator implementing identity, simply returns X.
- *
- * SEE ALSO: linop_new.
+         or rgl_identity(x, transp);
+
+     Linear operator implementing identity, simply returns X.
+
+   SEE ALSO: linop_new.
  */
 func rgl_identity(x, transp) { return x; }
 #if 0
