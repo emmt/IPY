@@ -33,8 +33,8 @@ if (! is_func(h_new)) include, "yeti.i", 1;
 
 local _linop_identity, _linop_diagonal, _linop_sparse, _linop_full;
 local _linop_function, _linop_parametric_function;
-local LINOP_DIRECT, LINOP_TRANSPOSE, LINOP_INVERSE;
-local LINOP_INVERSE_TRANSPOSE, LINOP_TRANSPOSE_INVERSE;
+local LINOP_DIRECT, LINOP_ADJOINT, LINOP_INVERSE;
+local LINOP_INVERSE_ADJOINT, LINOP_ADJOINT_INVERSE;
 local LINOP_AUTO, LINOP_IDENTITY, LINOP_SCALAR, LINOP_USERFUNC;
 local LINOP_DIAGONAL, LINOP_SPARSE, LINOP_FULL;
 local linop_new, linop_apply, _linop_type_table;
@@ -52,8 +52,8 @@ local linop_new, linop_apply, _linop_type_table;
 
      The function linop_new() creates a new linear operator object OP which can
      be used as a function (or with the linop_apply() function) to compute the
-     dot product of the 'vector' X by the 'matrix' (or its transpose if JOB is
-     LINOP_TRANSPOSE) which corresponds to the linear operator.  The different
+     dot product of the 'vector' X by the 'matrix' (or its adjoint if JOB is
+     LINOP_ADJOINT) which corresponds to the linear operator.  The different
      possibilities to define a linear operator object are described in the
      following.  If keyword VIRTUAL is true, the function implementing the
      linear operator is not directly referenced and the actual function
@@ -66,10 +66,10 @@ local linop_new, linop_apply, _linop_type_table;
      readability of the code):
 
         JOB = 0 (LINOP_DIRECT) or unspecified to apply the direct operator,
-              1 (LINOP_TRANSPOSE) to apply the transpose operator,
+              1 (LINOP_ADJOINT) to apply the adjoint operator,
               2 (LINOP_INVERSE) to apply the inverse operator,
-              3 (LINOP_INVERSE_TRANSPOSE  or LINOP_TRANSPOSE_INVERSE)
-                to apply the inverse transpose operator.
+              3 (LINOP_INVERSE_ADJOINT  or LINOP_ADJOINT_INVERSE)
+                to apply the inverse adjoint operator.
 
      Thanks to hash-table evaluator, it is not necessary to use linop_apply()
      and the usage of the linear operator object is simplified as follows:
@@ -147,7 +147,7 @@ local linop_new, linop_apply, _linop_type_table;
    USER DEFINED FUNCTION
 
      The linear operator object functionalities (dot product with the
-     corresponding 'matrix' or its transpose) can be implemented by a user
+     corresponding 'matrix' or its adjoint) can be implemented by a user
      defined function F.  There are two different possibilities depending
      whether or not the function needs aditional data (for instance to store
      the coefficients of the 'matrix').
@@ -166,7 +166,7 @@ local linop_new, linop_apply, _linop_type_table;
      dot and the prime indicate dot product and matrix transposition
      respectively and where (1/A) indicates matrix inverse.  Note that,
      depending on your needs, not all operations must be implemented in the
-     function F.  For instance, if only direct and matrix transpose products
+     function F.  For instance, if only direct and matrix adjoint products
      are implemented, the function can be something like:
 
          func f(x, job) {
@@ -281,11 +281,11 @@ func linop_new(a1, a2, virtual=)
 }
 
 /* Job values for linear operators: */
-LINOP_DIRECT            = 0;
-LINOP_TRANSPOSE         = 1;
-LINOP_INVERSE           = 2;
-LINOP_INVERSE_TRANSPOSE = 3;
-LINOP_TRANSPOSE_INVERSE = 3;
+LINOP_DIRECT          = 0;
+LINOP_ADJOINT         = 1;
+LINOP_INVERSE         = 2;
+LINOP_INVERSE_ADJOINT = (LINOP_ADJOINT|LINOP_INVERSE);
+LINOP_ADJOINT_INVERSE = (LINOP_ADJOINT|LINOP_INVERSE);
 
 /* Type of linear operators: */
 LINOP_AUTO     = 0;
@@ -295,6 +295,11 @@ LINOP_SPARSE   = 3;
 LINOP_FULL     = 4;
 LINOP_SCALAR   = 5;
 LINOP_USERFUNC = 6;
+
+/* For compatibility. */
+LINOP_TRANSPOSE = LINOP_ADJOINT;
+LINOP_INVERSE_TRANSPOSE = LINOP_INVERSE_ADJOINT;
+LINOP_TRANSPOSE_INVERSE = LINOP_ADJOINT_INVERSE;
 
 _linop_type_table = h_new(auto=LINOP_AUTO,
                           identity=LINOP_IDENTITY,
@@ -660,9 +665,9 @@ func linop_new_fftw(nil, dims=, measure=, real=)
          OP = linop_new_fftw();
          linop_apply(OP, x)    // compute FFT of X
          linop_apply(OP, x, 0) // idem
-         linop_apply(OP, x, 1) // apply conjugate transpose FFT to X
+         linop_apply(OP, x, 1) // apply adjoint of FFT to X
          linop_apply(OP, x, 2) // compute inverse FFT of X
-         linop_apply(OP, x, 3) // apply conjugate transpose inverse FFT to X
+         linop_apply(OP, x, 3) // apply adjoint of inverse FFT to X
 
          OP.nevals = number of FFT computed so far by OP
 
@@ -853,7 +858,8 @@ func _linop_fft_wrapper(op, x, job)
     error, "non-numerical argument";
   }
   eq_nocopy, dims, op.dims;
-  if ((xdims = dimsof(x))(1) != dims(1) || anyof(xdims != dims)) {
+  if (numberof((xdims = dimsof(x))) != numberof(dims) ||
+      anyof(xdims != dims)) {
     error, "incompatible dimensions of argument";
   }
   h_set, op, nevals = (op.nevals + 1);
