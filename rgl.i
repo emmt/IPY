@@ -1548,7 +1548,7 @@ func _rgl_hyperbolic_state1(self, x)
   rank = self.rank;
   mu = self.mu;
   t = abs(mu*self.tau);
-  w = abs2(mu*self.eta)*array(1.0, rank);
+  w = rgl_abs2(mu*self.eta)*array(1.0, rank);
   i = 1:-1;
   j = 2:0;
   if (rank == 1) {
@@ -3255,6 +3255,19 @@ func rgl_check_dimlist(&dimlist)
     dimlist = long(dimlist);
   }
   return number;
+}
+
+func rgl_abs2(x)
+/* DOCUMENT rgl_abs2(x);
+
+     Returns abs(X)^2 computed efficiently.
+
+   SEE ALSO: abs. */
+{
+  if (structof(x) != complex) return x*x;
+  y = x.im;
+  x = double(x);
+  return x*x + y*y;
 }
 
 /*---------------------------------------------------------------------------*/
