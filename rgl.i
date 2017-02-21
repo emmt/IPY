@@ -1492,6 +1492,108 @@ func rgl_make_2d_finite_difference_matrix(dimlist, which, ..)
 }
 
 /*---------------------------------------------------------------------------*/
+/* WHITE (SEPARABLE) REGULARIZATION */
+
+local rgl_l1l2white;
+/* DOCUMENT this = rgl_new("l1l2white");
+
+     Creates a regularizer which implements a separable (white) regularization.
+     The regularization penalty writes:
+
+         mu*sum(f(x))
+
+     where DX is the length of the local gradient of X along its dimensions:
+
+        DX = sqrt(DX1^2 + DX2^2 + ... + TAU^2) - TAU
+
+     where DXn is the partial derivative of X along n-th dimension scaled by
+     parameter ETA.
+
+     This regularization has the following hyper-parameters:
+
+       1 - "mu"     = global regularization weight;
+       2 - "delta"  = L1-L2 threshold.
+
+
+   SEE ALSO: rgl_new. */
+
+func _rgl_l1l2white_setup(self)
+{
+  return h_set(self, state=0, eta=1.0, delta=1e-8);
+}
+
+func _rgl_l1l2white_update(self, x)
+{
+  if (! is_array(x)) {
+    error, "expecting array argument";
+  }
+  h_set, self, state=0;
+}
+
+_rgl_l1l2white_state1 = _rgl_l1l2white_state2;
+
+func _rgl_l1l2white_state2(self, x)
+{
+  if (self.state < 2) {
+    local gx;
+    fx = huber_loss(self.delta, x, gx);
+    mu = self.mu;
+    if (mu != 1) {
+      fx *= mu;
+      gx *= mu;
+    }
+    h_set, self, state=2, err=fx, grd=gx;
+  }
+}
+
+func _rgl_l1l2white_get_penalty(self, x)
+{
+  if (self.state < 1) _rgl_l1l2white_state1, self, x;
+  return self.err;
+}
+
+func _rgl_l1l2white_get_gradient(self, x)
+{
+  if (self.state < 2) _rgl_l1l2white_state2, self, x;
+  return self.grd;
+}
+
+#if 0
+func _rgl_l1l2white_apply_hessian(self, x, s) {}
+func _rgl_l1l2white_get_hessian(self, x) {}
+func _rgl_l1l2white_get_diagonal_of_hessian(self, x) {}
+#endif
+
+func _rgl_l1l2white_get_attr(self, index)
+{
+  if (index == 1) return self.mu;
+  if (index == 2) return self.delta;
+}
+
+func _rgl_l1l2white_set_attr(self, index, value)
+{
+  if (index == 1) {
+    if (rgl_real_scalar(value) || value < 0.0) {
+      error, "\"global\" regularization weight must be a non-negative real";
+    }
+    if (value != self.mu) {
+      h_set, self, mu = double(value), state = 0;
+    }
+  }
+  if (index == 2) {
+    if (rgl_real_scalar(value) || value <= 0.0) {
+      error, "\"delta\" must be a strictly non-negative real";
+    }
+    if (value != self.tau) {
+      h_set, self, delta = double(value), state = 0;
+    }
+  }
+}
+
+/* After having defined all class methods, define the class itself: */
+_rgl_class, "l1l2white", ["mu", "delta"];
+
+/*---------------------------------------------------------------------------*/
 /* HYPERBOLIC EDGE-PRESERVING SMOOTHNESS (1D or 2D) */
 
 local rgl_hyperbolic;
@@ -3269,6 +3371,60 @@ func rgl_abs2(x)
   x = double(x);
   return x*x + y*y;
 }
+
+func huber_loss(args)
+/* DOCUMENT fx = huber_loss(delta, x);
+         or fx = huber_loss(delta, x, gx);
+
+      Return the Huber loss for array X computed as:
+
+         fx = sum(L(delta, x))
+
+      where the function L(d,x) is applied componentwise to X:
+
+         L(d,x) = (x^2)/2         if |x| < d
+                  d*(|x| - d/2)   else
+
+      If argument GX is provided, the gradient of the loss is stored in that
+      variable.
+
+   SEE ALSO:
+ */
+{
+  /* Parse arguments. */
+  local delta, x, gx;
+  nargs = args(0);
+  if (nargs < 2 || nargs > 3) error, "bad number of arguments";
+  eq_nocopy, delta, args(1);
+  eq_nocopy, x, args(2);
+  gradient = (nargs == 3);
+  if (delta <= 0) error, "invalid value for delta";
+
+  if (gradient) {
+    gx = array(double, dimsof(x));
+    args, 3, gx;
+  }
+  fx = 0.0;
+  abs_x = abs(x);
+  small = (abs_x < delta);
+  sel = where(small);
+  if (is_array(sel)) {
+    xsel = x(sel);
+    fx += 0.5*sum(xsel*xsel);
+    if (gradient) {
+      gx(sel) = xsel;
+    }
+  }
+  sel = where(! small);
+  if (is_array(sel)) {
+    fx += delta*(sum(abs_x(sel)) - 0.5*delta*numberof(sel));
+    if (gradient) {
+      gx(sel) = delta*sign(x(sel));
+    }
+  }
+  return fx;
+}
+wrap_args, huber_loss;
 
 /*---------------------------------------------------------------------------*/
 /* IDENTITY OPERATOR */
