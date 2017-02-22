@@ -3372,6 +3372,34 @@ func rgl_abs2(x)
   return x*x + y*y;
 }
 
+func hyperbolic_loss(arsg)
+/* DOCUMENT fx = hyperbolic_loss(delta, x);
+         or fx = hyperbolic_loss(delta, x, gx);
+
+      Return the Hyperbolic loss for array X computed as:
+
+         fx = sum(sqrt(x*x + delta*delta) - delta)
+
+      If argument GX is provided, the gradient of the loss is stored in that
+      variable.
+
+   SEE ALSO:
+ */
+{
+  local delta, x;
+  nargs = args(0);
+  if (nargs < 2 || nargs > 3) error, "bad number of arguments";
+  eq_nocopy, delta, args(1);
+  eq_nocopy, x, args(2);
+  if (delta <= 0) error, "invalid value for delta";
+  r = abs(x, delta);
+  if (nargs == 3) {
+    args, 3, x/r;
+  }
+  return sum(r) - numberof(x)*delta;
+}
+wrap_args, hyperbolic_loss;
+
 func huber_loss(args)
 /* DOCUMENT fx = huber_loss(delta, x);
          or fx = huber_loss(delta, x, gx);
