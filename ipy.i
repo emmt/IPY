@@ -33,7 +33,8 @@ extern ipy_norm_inf;
          or ipy_norm_2(x);
          or ipy_norm_inf(x);
 
-     Compute the L1, L2 (Euclidean) or infinite norms of X.   These are defined as:
+     Compute the L1, L2 (Euclidean) or infinite norms of X.  These are defined
+     as:
 
          ipy_norm_1(x) = sum(abs(x))
          ipy_norm_2(x) = sqrt(sum(abs(x)^2))
