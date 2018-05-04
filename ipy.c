@@ -32,8 +32,6 @@
 #include <float.h>
 #include <limits.h>
 
-#include <fitsio.h>
-
 #include <pstdlib.h>
 #include <play.h>
 #include <yapi.h>
