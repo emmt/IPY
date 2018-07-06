@@ -41,10 +41,10 @@ PKG_CLEAN=
 # autoload file for this package, if any
 PKG_I_START=${srcdir}/ipy-autoload.i
 # non-pkg.i include files for this package, if any
-PKG_I_EXTRA=${srcdir}/ipy-tests.i ${srcdir}/ipy-cost.i
+PKG_I_EXTRA=${srcdir}/ipy-tests.i ${srcdir}/ipy-cost.i ${srcdir}/linop.i ${srcdir}/rgl.i
 
 RELEASE_FILES = AUTHORS LICENSE.md Makefile NEWS README.md TODO \
-	configure linop.i admm.i cost.i ipy.i ipy.c \
+	configure linop.i ipy-cost.i ipy.i ipy.c \
 	ipy-autoload.i ipy-tests.i
 RELEASE_NAME = $(PKG_NAME)-$(RELEASE_VERSION).tar.bz2
 
