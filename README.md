@@ -24,7 +24,7 @@ Then, to use the plug-in, start the Yorick interpreter and type:
 ```
 More detailled explanations are given below.
 
-0. You must have [Yorick](http://yorick.github.com/) and
+0. You must have [Yorick](http://github.com/LLNL/yorick/) and
    [Yeti](https://github.com/emmt/Yeti) installed on your machine.
 
 1. Unpack the plug-in code somewhere.
