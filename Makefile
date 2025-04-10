@@ -101,6 +101,13 @@ start: ${srcdir}/ipy.i ${srcdir}/ipy-cost.i
 	  sed -E "/^ *(func|extern) +[A-Za-z][_0-9A-Za-z]*/!d;s/^ *(func|extern) +([A-Za-z][_0-9A-Za-z]*).*/autoload, \"$$y\", \2;/" < "$$x"; \
 	done
 
+tag:
+	@version=`sed -e '/^ *IPY_VERSION *= *"[0-9.]*" *; *$$/!d;s/^ *IPY_VERSION *= *"\([0-9.]*\)" *; *$$/\1/' <ipy.i`; \
+	echo "To tag this version, type:"; \
+	echo "   git tag -m 'Release $$version of IPY' v$$version"; \
+	echo "   git push"; \
+	echo "   git push --tags"
+
 release: $(RELEASE_NAME)
 
 $(RELEASE_NAME):
@@ -131,6 +138,6 @@ $(RELEASE_NAME):
 	  fi; \
 	fi;
 
-.PHONY: clean release
+.PHONY: clean release tag
 
 # -------------------------------------------------------- end of Makefile
