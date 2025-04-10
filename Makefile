@@ -105,7 +105,7 @@ release: $(RELEASE_NAME)
 
 $(RELEASE_NAME):
 	@if test "x$(RELEASE_VERSION)" = "x"; then \
-	  echo >&2 "set package version:  make RELEASE_VERSION=... release"; \
+	  echo >&2 "set package version: make RELEASE_VERSION=... release"; \
 	else \
           dir=`basename "$(RELEASE_NAME)" .tar.bz2`; \
 	  if test "x$$dir" = "x" -o "x$$dir" = "x."; then \
