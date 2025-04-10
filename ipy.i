@@ -6,7 +6,7 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2013-2015: Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (c) 2013-2025, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This file is part of free software IPY: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published by
@@ -25,6 +25,10 @@
  */
 
 if (is_func(plug_in)) plug_in, "ipy";
+
+local IPY_VERSION;
+/* DOCUMENT IPY_VERSION is a global variable with the current version of IPY. */
+IPY_VERSION = "2.0.0";
 
 extern ipy_norm_1;
 extern ipy_norm_2;
